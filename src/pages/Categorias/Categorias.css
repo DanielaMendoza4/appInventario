@@ -1,0 +1,20 @@
+.categorias-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.cant-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 24px;
+  padding: 0 0.5rem;
+  background-color: var(--color-border-subtle);
+  color: var(--color-text-main);
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  border: 1px solid var(--color-border);
+}
