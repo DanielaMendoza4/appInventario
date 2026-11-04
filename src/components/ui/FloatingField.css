@@ -1,0 +1,65 @@
+.ui-field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.ui-field__input {
+  width: 100%;
+  height: 56px;
+  padding: 1.5rem 0.9rem 0.55rem;
+  border-radius: var(--radius-md);
+  background-color: var(--color-sidebar-bg);
+  font-size: 0.9375rem;
+}
+
+.ui-field__label {
+  position: absolute;
+  left: 0.95rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+  pointer-events: none;
+  transition: var(--transition);
+  padding: 0 0.2rem;
+  line-height: 1;
+}
+
+.ui-field__input:focus + .ui-field__label,
+.ui-field__input:not(:placeholder-shown) + .ui-field__label {
+  top: 0.6rem;
+  transform: none;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.ui-field__input:not(:placeholder-shown):not(:focus) + .ui-field__label {
+  color: var(--color-text-muted);
+}
+
+.ui-field__trailing {
+  position: absolute;
+  right: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+}
+
+.ui-field:has(.ui-field__trailing) .ui-field__input {
+  padding-right: 2.9rem;
+}
+
+.ui-field__input:-webkit-autofill,
+.ui-field__input:-webkit-autofill:hover,
+.ui-field__input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-text-main);
+  -webkit-box-shadow: 0 0 0 1000px var(--color-sidebar-bg) inset;
+  transition: background-color 9999s ease-out 0s;
+  caret-color: var(--color-text-main);
+}

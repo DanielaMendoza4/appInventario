@@ -1,0 +1,90 @@
+.ui-stat {
+  padding: 1.35rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.ui-stat__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.ui-stat__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+}
+
+.ui-stat__icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(201, 160, 127, 0.14);
+  color: var(--color-primary);
+}
+
+.ui-stat__value {
+  font-family: var(--font-display);
+  font-size: 2.1rem;
+  font-weight: 700;
+  line-height: 1.05;
+  color: var(--color-text-main);
+  letter-spacing: -0.03em;
+}
+
+.ui-stat__hint {
+  font-size: 0.75rem;
+  color: var(--color-text-light);
+}
+
+.ui-stat--danger .ui-stat__icon {
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.ui-stat--danger .ui-stat__value {
+  color: var(--color-danger-text);
+}
+
+.ui-stat--success .ui-stat__icon {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.ui-stat--success .ui-stat__value {
+  color: var(--color-success-text);
+}
+
+.ui-stat--warning .ui-stat__icon {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.ui-stat--warning .ui-stat__value {
+  color: var(--color-warning-text);
+}
+
+.ui-stat--info .ui-stat__icon {
+  background-color: var(--color-info-bg);
+  color: var(--color-info);
+}
+
+@media (max-width: 480px) {
+  .ui-stat {
+    padding: 1.1rem 1.15rem;
+  }
+
+  .ui-stat__value {
+    font-size: 1.75rem;
+  }
+}
