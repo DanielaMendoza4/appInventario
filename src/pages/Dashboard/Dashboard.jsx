@@ -2,6 +2,12 @@ import { useEffect, useState } from 'react';
 import './Dashboard.css';
 import { getDashboardData } from '../../api/dashboard';
 import Badge from '../../components/Badge/Badge';
+import Card from '../../components/ui/Card';
+import StatCard from '../../components/ui/StatCard';
+import DataTable from '../../components/ui/DataTable';
+import EmptyState from '../../components/ui/EmptyState';
+import LoadingState from '../../components/ui/LoadingState';
+import ProgressBar from '../../components/ui/ProgressBar';
 import {
   IconProductos,
   IconCategorias,
@@ -9,7 +15,25 @@ import {
   IconKardex,
 } from '../../components/Icons/Icons';
 
-const CHART_COLORS = ['#2563eb', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
+const CHART_COLORS = [
+  '#C9A07F',
+  '#8A6149',
+  '#E3C4A3',
+  '#6F4A37',
+  '#D9A679',
+  '#A67C5B',
+  '#B98A63',
+  '#7C5340',
+];
+
+const formatFecha = (mov) =>
+  new Date(mov.fecha_hora || mov.createdAt).toLocaleDateString('es-PE', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
@@ -24,11 +48,23 @@ export default function Dashboard() {
   }, []);
 
   if (loading) {
-    return <div className="empty-state">Cargando panel de control...</div>;
+    return (
+      <div className="dashboard-page">
+        <Card className="dash-panel">
+          <LoadingState message="Cargando panel de control…" />
+        </Card>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="alert alert-danger">{error}</div>;
+    return (
+      <div className="dashboard-page">
+        <div className="alert alert-danger" role="alert">
+          {error}
+        </div>
+      </div>
+    );
   }
 
   const {
@@ -40,189 +76,226 @@ export default function Dashboard() {
     stockPorCategoria = [],
   } = data || {};
 
-  // Cálculo para el Donut Chart SVG puro
-  const totalStockGeneral = stockPorCategoria.reduce((sum, c) => sum + c.totalStock, 0);
+  const totalStockGeneral = stockPorCategoria.reduce(
+    (sum, cat) => sum + cat.totalStock,
+    0
+  );
+
   const radius = 60;
   const circumference = 2 * Math.PI * radius;
-  let accumulatedPercent = 0;
+  const categoriasConStock = stockPorCategoria.filter(
+    (cat) => cat.totalStock > 0
+  );
+
+  const chartSegments = categoriasConStock.map((cat, idx, arr) => {
+    const percent = cat.totalStock / totalStockGeneral;
+    const stockPrevio = arr
+      .slice(0, idx)
+      .reduce((sum, item) => sum + item.totalStock, 0);
+
+    return {
+      ...cat,
+      percent,
+      color: CHART_COLORS[idx % CHART_COLORS.length],
+      dashArray: `${circumference * percent} ${circumference * (1 - percent)}`,
+      dashOffset: -circumference * (stockPrevio / totalStockGeneral),
+    };
+  });
+
+  const columnasMovimientos = [
+    {
+      key: 'fecha',
+      header: 'Fecha',
+      render: (m) => formatFecha(m),
+    },
+    {
+      key: 'producto',
+      header: 'Producto',
+      render: (m) => (
+        <span className="dash-table__strong">
+          {m.Producto?.nombre || `Producto #${m.producto_id}`}
+        </span>
+      ),
+    },
+    {
+      key: 'tipo',
+      header: 'Tipo',
+      render: (m) => (
+        <Badge tipo={m.tipo_movimiento}>{m.tipo_movimiento}</Badge>
+      ),
+    },
+    {
+      key: 'cantidad',
+      header: 'Cantidad',
+      align: 'right',
+      render: (m) => (
+        <span
+          className={`dash-qty ${
+            m.tipo_movimiento === 'Salida' ? 'dash-qty--out' : 'dash-qty--in'
+          }`}
+        >
+          {m.tipo_movimiento === 'Salida' ? `-${m.cantidad}` : `+${m.cantidad}`}
+        </span>
+      ),
+    },
+    {
+      key: 'usuario',
+      header: 'Usuario',
+      render: (m) => m.Usuario?.nombre || 'Sistema',
+    },
+  ];
 
   return (
     <div className="dashboard-page">
-      {/* 4 Tarjetas KPI */}
-      <div className="kpi-grid">
-        <div className="kpi-card">
-          <div className="kpi-card__header">
-            <span className="kpi-card__title">Total Productos</span>
-            <div className="kpi-card__icon">
-              <IconProductos size={20} />
-            </div>
-          </div>
-          <div className="kpi-card__value">{totalProductos}</div>
-          <span className="kpi-card__subtext">Ítems registrados en inventario</span>
-        </div>
-
-        <div className="kpi-card">
-          <div className="kpi-card__header">
-            <span className="kpi-card__title">Categorías</span>
-            <div className="kpi-card__icon">
-              <IconCategorias size={20} />
-            </div>
-          </div>
-          <div className="kpi-card__value">{totalCategorias}</div>
-          <span className="kpi-card__subtext">Familias de productos activas</span>
-        </div>
-
-        <div className="kpi-card">
-          <div className="kpi-card__header">
-            <span className="kpi-card__title">Proveedores</span>
-            <div className="kpi-card__icon">
-              <IconProveedores size={20} />
-            </div>
-          </div>
-          <div className="kpi-card__value">{totalProveedores}</div>
-          <span className="kpi-card__subtext">Empresas proveedoras registradas</span>
-        </div>
-
-        <div className={`kpi-card ${bajoStock > 0 ? 'kpi-card--danger' : ''}`}>
-          <div className="kpi-card__header">
-            <span className="kpi-card__title">Bajo Stock</span>
-            <div className="kpi-card__icon">
-              <IconKardex size={20} />
-            </div>
-          </div>
-          <div className={`kpi-card__value ${bajoStock > 0 ? 'kpi-card__value--danger' : ''}`}>
-            {bajoStock}
-          </div>
-          <span className="kpi-card__subtext">Productos con stock ≤ 5 unidades</span>
-        </div>
+      <div className="dash-kpi-grid">
+        <StatCard
+          label="Total Productos"
+          value={totalProductos}
+          hint="Ítems registrados en inventario"
+          icon={<IconProductos size={20} />}
+          staggerIndex={0}
+        />
+        <StatCard
+          label="Categorías"
+          value={totalCategorias}
+          hint="Familias de productos activas"
+          icon={<IconCategorias size={20} />}
+          staggerIndex={1}
+        />
+        <StatCard
+          label="Proveedores"
+          value={totalProveedores}
+          hint="Empresas proveedoras registradas"
+          icon={<IconProveedores size={20} />}
+          staggerIndex={2}
+        />
+        <StatCard
+          label="Bajo Stock"
+          value={bajoStock}
+          hint="Productos con stock ≤ 5 unidades"
+          icon={<IconKardex size={20} />}
+          tone={bajoStock > 0 ? 'danger' : 'success'}
+          staggerIndex={3}
+        />
       </div>
 
-      {/* Grid de Contenido: Movimientos recientes + Donut Chart */}
-      <div className="dashboard-content-grid">
-        {/* Tabla Movimientos Recientes */}
-        <div className="dashboard-section-card">
-          <div className="dashboard-section-header">
-            <h3 className="dashboard-section-title">Movimientos Recientes (Kardex)</h3>
-          </div>
+      <div className="dash-grid">
+        <Card
+          as="section"
+          className="dash-panel"
+          aria-labelledby="dash-mov-title"
+        >
+          <header className="dash-panel__header">
+            <h2 id="dash-mov-title" className="dash-panel__title">
+              Movimientos recientes
+            </h2>
+            <span className="dash-panel__meta">
+              {recientes.length} registro{recientes.length === 1 ? '' : 's'}
+            </span>
+          </header>
 
-          <div className="table-responsive">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Producto</th>
-                  <th>Tipo</th>
-                  <th>Cantidad</th>
-                  <th>Usuario</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recientes.length === 0 ? (
-                  <tr>
-                    <td colSpan="5" className="empty-state">
-                      No hay movimientos recientes registrados.
-                    </td>
-                  </tr>
-                ) : (
-                  recientes.map((m) => (
-                    <tr key={m.id}>
-                      <td>
-                        {new Date(m.fecha_hora || m.createdAt).toLocaleDateString('es-PE', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </td>
-                      <td><strong>{m.Producto?.nombre || 'Producto #' + m.producto_id}</strong></td>
-                      <td>
-                        <Badge tipo={m.tipo_movimiento}>
-                          {m.tipo_movimiento}
-                        </Badge>
-                      </td>
-                      <td style={{ fontWeight: 600 }}>
-                        {m.tipo_movimiento === 'Salida' ? `-${m.cantidad}` : `+${m.cantidad}`}
-                      </td>
-                      <td>{m.Usuario?.nombre || 'Sistema'}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+          <DataTable
+            columns={columnasMovimientos}
+            rows={recientes}
+            rowKey={(m) => m.id}
+            minWidth={620}
+            emptyTitle="Sin movimientos recientes"
+            emptyMessage="Aún no se registran entradas, salidas o ajustes en el kardex."
+            emptyIcon={<IconKardex size={28} />}
+          />
+        </Card>
 
-        {/* Gráfico de dona SVG "Stock por Categoría" */}
-        <div className="dashboard-section-card">
-          <div className="dashboard-section-header">
-            <h3 className="dashboard-section-title">Stock por Categoría</h3>
-          </div>
+        <Card
+          as="section"
+          className="dash-panel"
+          aria-labelledby="dash-stock-title"
+        >
+          <header className="dash-panel__header">
+            <h2 id="dash-stock-title" className="dash-panel__title">
+              Stock por categoría
+            </h2>
+            <span className="dash-panel__meta">{totalStockGeneral} unds.</span>
+          </header>
 
-          <div className="donut-chart-container">
+          <div className="dash-panel__body">
             {totalStockGeneral === 0 ? (
-              <div className="empty-state">Sin stock distribuido en categorías.</div>
+              <EmptyState
+                icon={<IconCategorias size={28} />}
+                title="Sin stock registrado"
+                message="Registra productos con stock para ver la distribución por categoría."
+              />
             ) : (
               <>
-                <div className="donut-svg-wrapper">
-                  <svg width="180" height="180" viewBox="0 0 160 160">
+                <div className="dash-donut">
+                  <svg
+                    viewBox="0 0 160 160"
+                    role="img"
+                    aria-label={`Distribución de stock por categoría. Total ${totalStockGeneral} unidades.`}
+                  >
                     <circle
                       cx="80"
                       cy="80"
                       r={radius}
                       fill="transparent"
-                      stroke="#f1f5f9"
+                      stroke="var(--color-border-subtle)"
                       strokeWidth="20"
                     />
-                    {stockPorCategoria.map((cat, idx) => {
-                      if (cat.totalStock === 0) return null;
-                      const percent = cat.totalStock / totalStockGeneral;
-                      const strokeDasharray = `${circumference * percent} ${circumference * (1 - percent)}`;
-                      const strokeDashoffset = -circumference * accumulatedPercent;
-                      accumulatedPercent += percent;
-                      const color = CHART_COLORS[idx % CHART_COLORS.length];
-
-                      return (
-                        <circle
-                          key={cat.id}
-                          cx="80"
-                          cy="80"
-                          r={radius}
-                          fill="transparent"
-                          stroke={color}
-                          strokeWidth="20"
-                          strokeDasharray={strokeDasharray}
-                          strokeDashoffset={strokeDashoffset}
-                          transform="rotate(-90 80 80)"
-                        />
-                      );
-                    })}
+                    {chartSegments.map((seg) => (
+                      <circle
+                        key={seg.id}
+                        cx="80"
+                        cy="80"
+                        r={radius}
+                        fill="transparent"
+                        stroke={seg.color}
+                        strokeWidth="20"
+                        strokeDasharray={seg.dashArray}
+                        strokeDashoffset={seg.dashOffset}
+                        transform="rotate(-90 80 80)"
+                      />
+                    ))}
                   </svg>
 
-                  <div className="donut-center-text">
-                    <div className="donut-center-number">{totalStockGeneral}</div>
-                    <div className="donut-center-label">Unds. totales</div>
+                  <div className="dash-donut__center" aria-hidden="true">
+                    <span className="dash-donut__number">
+                      {totalStockGeneral}
+                    </span>
+                    <span className="dash-donut__label">unds. totales</span>
                   </div>
                 </div>
 
-                <div className="donut-legend">
-                  {stockPorCategoria.map((cat, idx) => (
-                    <div key={cat.id} className="donut-legend-item">
-                      <span className="donut-legend-name">
-                        <span
-                          className="donut-legend-color"
-                          style={{ backgroundColor: CHART_COLORS[idx % CHART_COLORS.length] }}
-                        />
-                        {cat.nombre}
-                      </span>
-                      <span className="donut-legend-val">{cat.totalStock} unds.</span>
-                    </div>
+                <ul className="dash-stock-list">
+                  {chartSegments.map((seg, idx) => (
+                    <li key={seg.id} className="dash-stock-row">
+                      <div className="dash-stock-row__top">
+                        <span className="dash-stock-row__name">
+                          <span
+                            className="dash-stock-row__dot"
+                            style={{ backgroundColor: seg.color }}
+                            aria-hidden="true"
+                          />
+                          {seg.nombre}
+                        </span>
+                        <span className="dash-stock-row__value">
+                          {seg.totalStock} unds.
+                          <span className="dash-stock-row__percent">
+                            {Math.round(seg.percent * 100)}%
+                          </span>
+                        </span>
+                      </div>
+                      <ProgressBar
+                        value={seg.percent * 100}
+                        color={seg.color}
+                        delay={idx * 90}
+                        label={`${seg.nombre}: ${Math.round(seg.percent * 100)}% del stock total`}
+                      />
+                    </li>
                   ))}
-                </div>
+                </ul>
               </>
             )}
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );
