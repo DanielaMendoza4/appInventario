@@ -229,6 +229,20 @@ select option {
   gap: 0.375rem;
 }
 
+.table-actions--center {
+  justify-content: center;
+}
+
+/* Utilidades de tabla */
+.row-id {
+  color: var(--color-text-light);
+  font-variant-numeric: tabular-nums;
+}
+
+.muted-cell {
+  color: var(--color-text-light);
+}
+
 /* Tarjeta estándar */
 .card {
   background: var(--color-card-bg);
@@ -287,6 +301,65 @@ select option {
 
   .page-toolbar {
     padding: 0.9rem 1.15rem;
+  }
+}
+
+/* Formularios dentro de modales */
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.form-group label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-main);
+}
+
+.form-group small {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.form-grid textarea {
+  resize: vertical;
+  min-height: 74px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+@media (max-width: 480px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .form-actions .btn {
+    min-height: 44px;
+    width: 100%;
   }
 }
 

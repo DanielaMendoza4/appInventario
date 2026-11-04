@@ -3,3 +3,24 @@
   flex-direction: column;
   gap: 1.25rem;
 }
+
+.prov-name {
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.prov-email {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.prov-email:hover {
+  text-decoration: underline;
+  color: var(--color-primary-hover);
+}
+
+@media (max-width: 640px) {
+  .table-actions .btn {
+    min-height: 44px;
+  }
+}

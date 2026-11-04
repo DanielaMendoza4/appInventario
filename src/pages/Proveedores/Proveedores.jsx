@@ -5,7 +5,14 @@ import Modal from '../../components/Modal/Modal';
 import { TopbarAction } from '../../components/Layout/TopbarAction';
 import SearchInput from '../../components/SearchInput/SearchInput';
 import Pagination from '../../components/Pagination/Pagination';
-import { IconPlus, IconEdit, IconDelete } from '../../components/Icons/Icons';
+import Card from '../../components/ui/Card';
+import DataTable from '../../components/ui/DataTable';
+import {
+  IconPlus,
+  IconEdit,
+  IconDelete,
+  IconProveedores,
+} from '../../components/Icons/Icons';
 
 const formVacio = {
   razon_social: '',
@@ -27,6 +34,29 @@ export default function Proveedores() {
   const [paginaActual, setPaginaActual] = useState(1);
   const itemsPorPagina = 5;
 
+  useEffect(() => {
+    let cancelado = false;
+
+    getProveedores()
+      .then((data) => {
+        if (cancelado) return;
+        setProveedores(data);
+        setError('');
+      })
+      .catch((err) => {
+        if (!cancelado) {
+          setError(err.response?.data?.error || 'Error al cargar proveedores');
+        }
+      })
+      .finally(() => {
+        if (!cancelado) setLoading(false);
+      });
+
+    return () => {
+      cancelado = true;
+    };
+  }, []);
+
   const cargarProveedores = async () => {
     try {
       setLoading(true);
@@ -39,10 +69,6 @@ export default function Proveedores() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    cargarProveedores();
-  }, []);
 
   const abrirModalNuevo = () => {
     setEditandoId(null);
@@ -120,7 +146,6 @@ export default function Proveedores() {
     }
   };
 
-  // Filtrado por Razón Social o Contacto
   const filtrados = proveedores.filter((p) => {
     const rs = (p.razon_social || '').toLowerCase();
     const contacto = (p.contacto || '').toLowerCase();
@@ -128,10 +153,74 @@ export default function Proveedores() {
     return rs.includes(query) || contacto.includes(query);
   });
 
-  // Paginación
   const totalItems = filtrados.length;
   const indiceInicio = (paginaActual - 1) * itemsPorPagina;
   const paginados = filtrados.slice(indiceInicio, indiceInicio + itemsPorPagina);
+  const hayBusqueda = busqueda.trim() !== '';
+
+  const columnas = [
+    {
+      key: 'id',
+      header: 'ID',
+      width: 64,
+      render: (p) => <span className="row-id">#{p.id}</span>,
+    },
+    {
+      key: 'razon_social',
+      header: 'Razón social',
+      render: (p) => <span className="prov-name">{p.razon_social}</span>,
+    },
+    {
+      key: 'contacto',
+      header: 'Contacto',
+      render: (p) => p.contacto || <span className="muted-cell">—</span>,
+    },
+    {
+      key: 'telefono',
+      header: 'Teléfono',
+      render: (p) => p.telefono || <span className="muted-cell">—</span>,
+    },
+    {
+      key: 'email',
+      header: 'Email',
+      render: (p) =>
+        p.email ? (
+          <a className="prov-email" href={`mailto:${p.email}`}>
+            {p.email}
+          </a>
+        ) : (
+          <span className="muted-cell">—</span>
+        ),
+    },
+    {
+      key: 'acciones',
+      header: 'Acciones',
+      width: 176,
+      align: 'center',
+      render: (p) => (
+        <div className="table-actions table-actions--center">
+          <button
+            type="button"
+            className="btn btn-warning btn-sm"
+            onClick={() => abrirModalEditar(p)}
+            title="Editar proveedor"
+          >
+            <IconEdit size={14} />
+            <span>Editar</span>
+          </button>
+          <button
+            type="button"
+            className="btn btn-danger btn-sm"
+            onClick={() => handleEliminar(p.id, p.razon_social)}
+            title="Eliminar proveedor"
+          >
+            <IconDelete size={14} />
+            <span>Eliminar</span>
+          </button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="proveedores-page">
@@ -142,83 +231,49 @@ export default function Proveedores() {
         </button>
       </TopbarAction>
 
-      {error && <div className="alert alert-danger">{error}</div>}
+      <Card as="section" className="page-panel" aria-labelledby="proveedores-title">
+        <header className="page-panel__header">
+          <div>
+            <h2 id="proveedores-title" className="page-panel__title">
+              Proveedores registrados
+            </h2>
+            <p className="page-panel__subtitle">
+              {totalItems} de {proveedores.length} proveedores
+            </p>
+          </div>
+        </header>
 
-      <div className="card">
-        <div className="page-actions-bar" style={{ padding: '1rem 1rem 0' }}>
+        <div className="page-toolbar">
           <SearchInput
             value={busqueda}
             onChange={(val) => {
               setBusqueda(val);
               setPaginaActual(1);
             }}
-            placeholder="Buscar por Razón Social o Contacto…"
+            placeholder="Buscar por razón social o contacto…"
           />
         </div>
 
-        <div className="table-responsive">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th style={{ width: '60px' }}>ID</th>
-                <th>Razón Social</th>
-                <th>Contacto</th>
-                <th>Teléfono</th>
-                <th>Email</th>
-                <th style={{ width: '160px', textAlign: 'center' }}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan="6" className="empty-state">Cargando proveedores...</td>
-                </tr>
-              ) : paginados.length === 0 ? (
-                <tr>
-                  <td colSpan="6" className="empty-state">
-                    {busqueda ? 'No se encontraron proveedores coincidentes' : 'No hay proveedores registrados'}
-                  </td>
-                </tr>
-              ) : (
-                paginados.map((p) => (
-                  <tr key={p.id}>
-                    <td><strong>#{p.id}</strong></td>
-                    <td><strong>{p.razon_social}</strong></td>
-                    <td>{p.contacto || '-'}</td>
-                    <td>{p.telefono || '-'}</td>
-                    <td>
-                      {p.email ? (
-                        <a href={`mailto:${p.email}`} style={{ color: 'var(--color-primary)' }}>
-                          {p.email}
-                        </a>
-                      ) : '-'}
-                    </td>
-                    <td>
-                      <div className="table-actions" style={{ justifyContent: 'center' }}>
-                        <button
-                          className="btn btn-warning btn-sm"
-                          onClick={() => abrirModalEditar(p)}
-                          title="Editar proveedor"
-                        >
-                          <IconEdit size={14} />
-                          <span>Editar</span>
-                        </button>
-                        <button
-                          className="btn btn-danger btn-sm"
-                          onClick={() => handleEliminar(p.id, p.razon_social)}
-                          title="Eliminar proveedor"
-                        >
-                          <IconDelete size={14} />
-                          <span>Eliminar</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          columns={columnas}
+          rows={paginados}
+          rowKey={(p) => p.id}
+          loading={loading}
+          error={error}
+          loadingMessage="Cargando proveedores…"
+          minWidth={820}
+          emptyTitle={
+            hayBusqueda
+              ? 'No se encontraron proveedores'
+              : 'Aún no hay proveedores'
+          }
+          emptyMessage={
+            hayBusqueda
+              ? 'Prueba con otro término de búsqueda.'
+              : 'Registra tu primer proveedor con el botón de la barra superior.'
+          }
+          emptyIcon={<IconProveedores size={30} />}
+        />
 
         <Pagination
           totalItems={totalItems}
@@ -227,19 +282,22 @@ export default function Proveedores() {
           onPageChange={setPaginaActual}
           resourceName="proveedores"
         />
-      </div>
+      </Card>
 
-      {/* Modal Nuevo / Editar Proveedor */}
       <Modal
         isOpen={modalOpen}
         onClose={cerrarModal}
-        title={editandoId ? 'Editar Proveedor' : 'Nuevo Proveedor'}
+        title={editandoId ? 'Editar proveedor' : 'Nuevo proveedor'}
       >
-        {formError && <div className="alert alert-danger">{formError}</div>}
+        {formError && (
+          <div className="alert alert-danger" role="alert">
+            {formError}
+          </div>
+        )}
 
         <form onSubmit={handleGuardar} className="form-grid">
           <div className="form-group">
-            <label htmlFor="razon_social">Razón Social / Empresa *</label>
+            <label htmlFor="razon_social">Razón social / Empresa *</label>
             <input
               id="razon_social"
               name="razon_social"
@@ -252,7 +310,7 @@ export default function Proveedores() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="contacto">Nombre de Contacto</label>
+            <label htmlFor="contacto">Nombre de contacto</label>
             <input
               id="contacto"
               name="contacto"
@@ -277,7 +335,7 @@ export default function Proveedores() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="email">Correo Electrónico</label>
+              <label htmlFor="email">Correo electrónico</label>
               <input
                 id="email"
                 name="email"
@@ -289,12 +347,16 @@ export default function Proveedores() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
+          <div className="form-actions">
             <button type="button" className="btn btn-secondary" onClick={cerrarModal}>
               Cancelar
             </button>
             <button type="submit" className="btn btn-primary" disabled={guardando}>
-              {guardando ? 'Guardando…' : editandoId ? 'Actualizar Proveedor' : 'Guardar Proveedor'}
+              {guardando
+                ? 'Guardando…'
+                : editandoId
+                  ? 'Actualizar proveedor'
+                  : 'Guardar proveedor'}
             </button>
           </div>
         </form>

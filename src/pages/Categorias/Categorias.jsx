@@ -5,7 +5,14 @@ import Modal from '../../components/Modal/Modal';
 import { TopbarAction } from '../../components/Layout/TopbarAction';
 import SearchInput from '../../components/SearchInput/SearchInput';
 import Pagination from '../../components/Pagination/Pagination';
-import { IconPlus, IconEdit, IconDelete } from '../../components/Icons/Icons';
+import Card from '../../components/ui/Card';
+import DataTable from '../../components/ui/DataTable';
+import {
+  IconPlus,
+  IconEdit,
+  IconDelete,
+  IconCategorias,
+} from '../../components/Icons/Icons';
 
 const formVacio = { nombre: '', descripcion: '' };
 
@@ -22,6 +29,29 @@ export default function Categorias() {
   const [paginaActual, setPaginaActual] = useState(1);
   const itemsPorPagina = 5;
 
+  useEffect(() => {
+    let cancelado = false;
+
+    getCategorias()
+      .then((data) => {
+        if (cancelado) return;
+        setCategorias(data);
+        setError('');
+      })
+      .catch((err) => {
+        if (!cancelado) {
+          setError(err.response?.data?.error || 'Error al cargar categorías');
+        }
+      })
+      .finally(() => {
+        if (!cancelado) setLoading(false);
+      });
+
+    return () => {
+      cancelado = true;
+    };
+  }, []);
+
   const cargarCategorias = async () => {
     try {
       setLoading(true);
@@ -34,10 +64,6 @@ export default function Categorias() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    cargarCategorias();
-  }, []);
 
   const abrirModalNuevo = () => {
     setEditandoId(null);
@@ -111,15 +137,79 @@ export default function Categorias() {
     }
   };
 
-  // Filtrar
   const filtradas = categorias.filter((c) =>
     (c.nombre || '').toLowerCase().includes(busqueda.toLowerCase().trim())
   );
 
-  // Paginar
   const totalItems = filtradas.length;
   const indiceInicio = (paginaActual - 1) * itemsPorPagina;
   const paginadas = filtradas.slice(indiceInicio, indiceInicio + itemsPorPagina);
+  const hayBusqueda = busqueda.trim() !== '';
+
+  const columnas = [
+    {
+      key: 'id',
+      header: 'ID',
+      width: 64,
+      render: (c) => <span className="row-id">#{c.id}</span>,
+    },
+    {
+      key: 'nombre',
+      header: 'Nombre',
+      render: (c) => <span className="cat-name">{c.nombre}</span>,
+    },
+    {
+      key: 'descripcion',
+      header: 'Descripción',
+      render: (c) =>
+        c.descripcion || <span className="muted-cell">Sin descripción</span>,
+    },
+    {
+      key: 'productos',
+      header: 'Productos',
+      width: 110,
+      align: 'center',
+      render: (c) => {
+        const cantProductos = c.Productos ? c.Productos.length : 0;
+        return (
+          <span
+            className="cant-badge"
+            aria-label={`${cantProductos} productos`}
+          >
+            {cantProductos}
+          </span>
+        );
+      },
+    },
+    {
+      key: 'acciones',
+      header: 'Acciones',
+      width: 176,
+      align: 'center',
+      render: (c) => (
+        <div className="table-actions table-actions--center">
+          <button
+            type="button"
+            className="btn btn-warning btn-sm"
+            onClick={() => abrirModalEditar(c)}
+            title="Editar categoría"
+          >
+            <IconEdit size={14} />
+            <span>Editar</span>
+          </button>
+          <button
+            type="button"
+            className="btn btn-danger btn-sm"
+            onClick={() => handleEliminar(c.id, c.nombre)}
+            title="Eliminar categoría"
+          >
+            <IconDelete size={14} />
+            <span>Eliminar</span>
+          </button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="categorias-page">
@@ -130,80 +220,49 @@ export default function Categorias() {
         </button>
       </TopbarAction>
 
-      {error && <div className="alert alert-danger">{error}</div>}
+      <Card as="section" className="page-panel" aria-labelledby="categorias-title">
+        <header className="page-panel__header">
+          <div>
+            <h2 id="categorias-title" className="page-panel__title">
+              Categorías registradas
+            </h2>
+            <p className="page-panel__subtitle">
+              {totalItems} de {categorias.length} categorías
+            </p>
+          </div>
+        </header>
 
-      <div className="card">
-        <div className="page-actions-bar" style={{ padding: '1rem 1rem 0' }}>
+        <div className="page-toolbar">
           <SearchInput
             value={busqueda}
             onChange={(val) => {
               setBusqueda(val);
               setPaginaActual(1);
             }}
-            placeholder="Buscar por nombre..."
+            placeholder="Buscar por nombre…"
           />
         </div>
 
-        <div className="table-responsive">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th style={{ width: '60px' }}>ID</th>
-                <th>Nombre</th>
-                <th>Descripción</th>
-                <th style={{ width: '140px', textAlign: 'center' }}>Cant. Productos</th>
-                <th style={{ width: '160px', textAlign: 'center' }}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan="5" className="empty-state">Cargando categorías...</td>
-                </tr>
-              ) : paginadas.length === 0 ? (
-                <tr>
-                  <td colSpan="5" className="empty-state">
-                    {busqueda ? 'No se encontraron categorías coincidentes' : 'No hay categorías registradas'}
-                  </td>
-                </tr>
-              ) : (
-                paginadas.map((c) => {
-                  const cantProductos = c.Productos ? c.Productos.length : 0;
-                  return (
-                    <tr key={c.id}>
-                      <td><strong>#{c.id}</strong></td>
-                      <td><strong>{c.nombre}</strong></td>
-                      <td>{c.descripcion || <span style={{ color: 'var(--color-text-light)' }}>Sin descripción</span>}</td>
-                      <td style={{ textAlign: 'center' }}>
-                        <span className="cant-badge">{cantProductos}</span>
-                      </td>
-                      <td>
-                        <div className="table-actions" style={{ justifyContent: 'center' }}>
-                          <button
-                            className="btn btn-warning btn-sm"
-                            onClick={() => abrirModalEditar(c)}
-                            title="Editar categoría"
-                          >
-                            <IconEdit size={14} />
-                            <span>Editar</span>
-                          </button>
-                          <button
-                            className="btn btn-danger btn-sm"
-                            onClick={() => handleEliminar(c.id, c.nombre)}
-                            title="Eliminar categoría"
-                          >
-                            <IconDelete size={14} />
-                            <span>Eliminar</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          columns={columnas}
+          rows={paginadas}
+          rowKey={(c) => c.id}
+          loading={loading}
+          error={error}
+          loadingMessage="Cargando categorías…"
+          minWidth={680}
+          emptyTitle={
+            hayBusqueda
+              ? 'No se encontraron categorías'
+              : 'Aún no hay categorías'
+          }
+          emptyMessage={
+            hayBusqueda
+              ? 'Prueba con otro término de búsqueda.'
+              : 'Crea tu primera categoría con el botón de la barra superior.'
+          }
+          emptyIcon={<IconCategorias size={30} />}
+        />
 
         <Pagination
           totalItems={totalItems}
@@ -212,19 +271,22 @@ export default function Categorias() {
           onPageChange={setPaginaActual}
           resourceName="categorías"
         />
-      </div>
+      </Card>
 
-      {/* Modal Nueva / Editar Categoría */}
       <Modal
         isOpen={modalOpen}
         onClose={cerrarModal}
-        title={editandoId ? 'Editar Categoría' : 'Nueva Categoría'}
+        title={editandoId ? 'Editar categoría' : 'Nueva categoría'}
       >
-        {formError && <div className="alert alert-danger">{formError}</div>}
+        {formError && (
+          <div className="alert alert-danger" role="alert">
+            {formError}
+          </div>
+        )}
 
         <form onSubmit={handleGuardar} className="form-grid">
           <div className="form-group">
-            <label htmlFor="nombre">Nombre de la Categoría *</label>
+            <label htmlFor="nombre">Nombre de la categoría *</label>
             <input
               id="nombre"
               name="nombre"
@@ -248,12 +310,16 @@ export default function Categorias() {
             />
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
+          <div className="form-actions">
             <button type="button" className="btn btn-secondary" onClick={cerrarModal}>
               Cancelar
             </button>
             <button type="submit" className="btn btn-primary" disabled={guardando}>
-              {guardando ? 'Guardando…' : editandoId ? 'Actualizar Categoría' : 'Guardar Categoría'}
+              {guardando
+                ? 'Guardando…'
+                : editandoId
+                  ? 'Actualizar categoría'
+                  : 'Guardar categoría'}
             </button>
           </div>
         </form>
