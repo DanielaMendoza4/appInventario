@@ -8,7 +8,16 @@ import { TopbarAction } from '../../components/Layout/TopbarAction';
 import Badge from '../../components/Badge/Badge';
 import SearchInput from '../../components/SearchInput/SearchInput';
 import Pagination from '../../components/Pagination/Pagination';
-import { IconPlus, IconEye } from '../../components/Icons/Icons';
+import Card from '../../components/ui/Card';
+import Chip from '../../components/ui/Chip';
+import DataTable from '../../components/ui/DataTable';
+import {
+  IconPlus,
+  IconEye,
+  IconKardex,
+} from '../../components/Icons/Icons';
+
+const TIPOS = ['Entrada', 'Salida', 'Ajuste'];
 
 const formVacio = {
   producto_id: '',
@@ -16,6 +25,17 @@ const formVacio = {
   cantidad: '',
   observaciones: '',
 };
+
+const fetchKardexData = () => Promise.all([getMovimientos(), getProductos()]);
+
+const formatFechaTabla = (mov) =>
+  new Date(mov.fecha_hora || mov.createdAt).toLocaleDateString('es-PE', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 
 export default function Kardex() {
   const { user } = useAuth();
@@ -30,29 +50,53 @@ export default function Kardex() {
   const [formError, setFormError] = useState('');
   const [guardando, setGuardando] = useState(false);
   const [busqueda, setBusqueda] = useState('');
+  const [tipoFiltro, setTipoFiltro] = useState('todos');
   const [paginaActual, setPaginaActual] = useState(1);
   const itemsPorPagina = 5;
+
+  useEffect(() => {
+    let cancelado = false;
+
+    fetchKardexData()
+      .then(([movs, prods]) => {
+        if (cancelado) return;
+        setMovimientos(movs);
+        setProductos(prods);
+        setError('');
+      })
+      .catch((err) => {
+        if (!cancelado) {
+          setError(
+            err.response?.data?.error ||
+              'Error al cargar los movimientos del kardex'
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelado) setLoading(false);
+      });
+
+    return () => {
+      cancelado = true;
+    };
+  }, []);
 
   const cargarDatos = async () => {
     try {
       setLoading(true);
-      const [movs, prods] = await Promise.all([
-        getMovimientos(),
-        getProductos(),
-      ]);
+      const [movs, prods] = await fetchKardexData();
       setMovimientos(movs);
       setProductos(prods);
       setError('');
     } catch (err) {
-      setError(err.response?.data?.error || 'Error al cargar los movimientos del kardex');
+      setError(
+        err.response?.data?.error ||
+          'Error al cargar los movimientos del kardex'
+      );
     } finally {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    cargarDatos();
-  }, []);
 
   const abrirRegistro = () => {
     setForm(formVacio);
@@ -83,9 +127,13 @@ export default function Kardex() {
       return;
     }
 
-    const prodSel = productos.find((p) => p.id === parseInt(form.producto_id, 10));
+    const prodSel = productos.find(
+      (p) => p.id === parseInt(form.producto_id, 10)
+    );
     if (form.tipo_movimiento === 'Salida' && prodSel && cant > prodSel.stock) {
-      setFormError(`Stock insuficiente. Stock actual disponible: ${prodSel.stock} unidades.`);
+      setFormError(
+        `Stock insuficiente. Stock actual disponible: ${prodSel.stock} unidades.`
+      );
       return;
     }
 
@@ -105,7 +153,9 @@ export default function Kardex() {
       setForm(formVacio);
       await cargarDatos();
     } catch (err) {
-      setFormError(err.response?.data?.error || 'Error al registrar el movimiento');
+      setFormError(
+        err.response?.data?.error || 'Error al registrar el movimiento'
+      );
     } finally {
       setGuardando(false);
     }
@@ -125,23 +175,110 @@ export default function Kardex() {
     }
   };
 
-  // Filtrado por producto, tipo o usuario
+  // Filtrado por tipo + búsqueda, antes de paginar
   const filtrados = movimientos.filter((m) => {
+    const coincideTipo =
+      tipoFiltro === 'todos' || m.tipo_movimiento === tipoFiltro;
     const prod = (m.Producto?.nombre || '').toLowerCase();
     const tipo = (m.tipo_movimiento || '').toLowerCase();
     const usr = (m.Usuario?.nombre || '').toLowerCase();
     const q = busqueda.toLowerCase().trim();
-    return prod.includes(q) || tipo.includes(q) || usr.includes(q);
+    const coincideBusqueda =
+      prod.includes(q) || tipo.includes(q) || usr.includes(q);
+
+    return coincideTipo && coincideBusqueda;
   });
 
-  // Paginación
   const totalItems = filtrados.length;
   const indiceInicio = (paginaActual - 1) * itemsPorPagina;
   const paginados = filtrados.slice(indiceInicio, indiceInicio + itemsPorPagina);
 
+  const hayFiltros = busqueda.trim() !== '' || tipoFiltro !== 'todos';
+
+  const contarTipo = (tipo) =>
+    movimientos.filter((m) => m.tipo_movimiento === tipo).length;
+
   const productoSeleccionadoActual = productos.find(
     (p) => p.id === parseInt(form.producto_id, 10)
   );
+
+  const columnas = [
+    {
+      key: 'id',
+      header: 'ID',
+      width: 64,
+      render: (m) => <span className="row-id">#{m.id}</span>,
+    },
+    {
+      key: 'fecha',
+      header: 'Fecha / hora',
+      render: (m) => formatFechaTabla(m),
+    },
+    {
+      key: 'producto',
+      header: 'Producto',
+      render: (m) => (
+        <span className="kardex-product">
+          {m.Producto?.nombre || `Producto #${m.producto_id}`}
+        </span>
+      ),
+    },
+    {
+      key: 'tipo',
+      header: 'Tipo',
+      render: (m) => (
+        <Badge tipo={m.tipo_movimiento}>{m.tipo_movimiento}</Badge>
+      ),
+    },
+    {
+      key: 'cantidad',
+      header: 'Cantidad',
+      align: 'right',
+      render: (m) => (
+        <span
+          className={`kardex-qty ${
+            m.tipo_movimiento === 'Salida'
+              ? 'kardex-qty--out'
+              : 'kardex-qty--in'
+          }`}
+        >
+          {m.tipo_movimiento === 'Salida' ? `-${m.cantidad}` : `+${m.cantidad}`}
+        </span>
+      ),
+    },
+    {
+      key: 'usuario',
+      header: 'Usuario',
+      render: (m) => m.Usuario?.nombre || 'Sistema',
+    },
+    {
+      key: 'acciones',
+      header: 'Acciones',
+      width: 168,
+      align: 'center',
+      render: (m) => (
+        <div className="table-actions table-actions--center">
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => abrirDetalle(m)}
+            title="Ver detalle del movimiento"
+          >
+            <IconEye size={14} />
+            <span>Ver</span>
+          </button>
+          <button
+            type="button"
+            className="btn btn-outline-danger btn-sm"
+            onClick={() => handleAnular(m)}
+            title="Anular movimiento y revertir stock"
+          >
+            <span>Anular</span>
+          </button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="kardex-page">
@@ -152,92 +289,82 @@ export default function Kardex() {
         </button>
       </TopbarAction>
 
-      {error && <div className="alert alert-danger">{error}</div>}
+      <Card as="section" className="page-panel" aria-labelledby="kardex-title">
+        <header className="page-panel__header">
+          <div>
+            <h2 id="kardex-title" className="page-panel__title">
+              Movimientos de kardex
+            </h2>
+            <p className="page-panel__subtitle">
+              {totalItems} de {movimientos.length} movimientos
+            </p>
+          </div>
+        </header>
 
-      <div className="card">
-        <div className="page-actions-bar" style={{ padding: '1rem 1rem 0' }}>
-          <SearchInput
-            value={busqueda}
-            onChange={(val) => {
-              setBusqueda(val);
-              setPaginaActual(1);
-            }}
-            placeholder="Buscar por producto, tipo o usuario…"
-          />
+        <div className="page-toolbar">
+          <div className="kardex-search">
+            <SearchInput
+              value={busqueda}
+              onChange={(val) => {
+                setBusqueda(val);
+                setPaginaActual(1);
+              }}
+              placeholder="Buscar por producto, tipo o usuario…"
+            />
+          </div>
+
+          <div
+            className="kardex-chips"
+            role="group"
+            aria-label="Filtrar por tipo de movimiento"
+          >
+            <Chip
+              active={tipoFiltro === 'todos'}
+              count={movimientos.length}
+              onClick={() => {
+                setTipoFiltro('todos');
+                setPaginaActual(1);
+              }}
+            >
+              Todas
+            </Chip>
+
+            {TIPOS.map((tipo) => (
+              <Chip
+                key={tipo}
+                active={tipoFiltro === tipo}
+                count={contarTipo(tipo)}
+                onClick={() => {
+                  setTipoFiltro(tipo);
+                  setPaginaActual(1);
+                }}
+              >
+                {tipo}
+              </Chip>
+            ))}
+          </div>
         </div>
 
-        <div className="table-responsive">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th style={{ width: '60px' }}>ID</th>
-                <th>Fecha / Hora</th>
-                <th>Producto</th>
-                <th>Tipo</th>
-                <th>Cantidad</th>
-                <th>Usuario</th>
-                <th style={{ width: '160px', textAlign: 'center' }}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan="7" className="empty-state">Cargando kardex...</td>
-                </tr>
-              ) : paginados.length === 0 ? (
-                <tr>
-                  <td colSpan="7" className="empty-state">
-                    {busqueda ? 'No se encontraron movimientos coincidentes' : 'No hay movimientos registrados'}
-                  </td>
-                </tr>
-              ) : (
-                paginados.map((m) => (
-                  <tr key={m.id}>
-                    <td><strong>#{m.id}</strong></td>
-                    <td>
-                      {new Date(m.fecha_hora || m.createdAt).toLocaleString('es-PE', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </td>
-                    <td><strong>{m.Producto?.nombre || 'Producto #' + m.producto_id}</strong></td>
-                    <td>
-                      <Badge tipo={m.tipo_movimiento}>
-                        {m.tipo_movimiento}
-                      </Badge>
-                    </td>
-                    <td style={{ fontWeight: 600 }}>
-                      {m.tipo_movimiento === 'Salida' ? `-${m.cantidad}` : `+${m.cantidad}`}
-                    </td>
-                    <td>{m.Usuario?.nombre || 'Sistema'}</td>
-                    <td>
-                      <div className="table-actions" style={{ justifyContent: 'center' }}>
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          onClick={() => abrirDetalle(m)}
-                          title="Ver detalle del movimiento"
-                        >
-                          <IconEye size={14} />
-                          <span>Ver</span>
-                        </button>
-                        <button
-                          className="btn btn-outline-danger btn-sm"
-                          onClick={() => handleAnular(m)}
-                          title="Anular movimiento y revertir stock"
-                        >
-                          <span>Anular</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          columns={columnas}
+          rows={paginados}
+          rowKey={(m) => m.id}
+          loading={loading}
+          error={error}
+          loadingMessage="Cargando kardex…"
+          minWidth={900}
+          emptyTitle={
+            hayFiltros
+              ? 'No se encontraron movimientos'
+              : 'Aún no hay movimientos'
+          }
+          emptyMessage={
+            hayFiltros
+              ? 'Prueba con otro término de búsqueda o cambia el tipo de movimiento.'
+              : 'Registra la primera entrada o salida con el botón de la barra superior.'
+          }
+          emptyIcon={<IconKardex size={30} />}
+        />
 
         <Pagination
           totalItems={totalItems}
@@ -246,15 +373,18 @@ export default function Kardex() {
           onPageChange={setPaginaActual}
           resourceName="movimientos"
         />
-      </div>
+      </Card>
 
-      {/* Modal Registro de Movimiento */}
       <Modal
         isOpen={modalRegistroOpen}
         onClose={() => setModalRegistroOpen(false)}
-        title="Registrar Movimiento de Inventario"
+        title="Registrar movimiento"
       >
-        {formError && <div className="alert alert-danger">{formError}</div>}
+        {formError && (
+          <div className="alert alert-danger" role="alert">
+            {formError}
+          </div>
+        )}
 
         <form onSubmit={handleGuardar} className="form-grid">
           <div className="form-group">
@@ -274,13 +404,16 @@ export default function Kardex() {
               ))}
             </select>
             {productoSeleccionadoActual && (
-              <small>Stock disponible: <strong>{productoSeleccionadoActual.stock} unds.</strong></small>
+              <small>
+                Stock disponible:{' '}
+                <strong>{productoSeleccionadoActual.stock} unds.</strong>
+              </small>
             )}
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="tipo_movimiento">Tipo de Movimiento *</label>
+              <label htmlFor="tipo_movimiento">Tipo de movimiento *</label>
               <select
                 id="tipo_movimiento"
                 name="tipo_movimiento"
@@ -288,9 +421,9 @@ export default function Kardex() {
                 value={form.tipo_movimiento}
                 onChange={handleChange}
               >
-                <option value="Entrada">Entrada (Aumenta stock)</option>
-                <option value="Salida">Salida (Disminuye stock)</option>
-                <option value="Ajuste">Ajuste (Modificación)</option>
+                <option value="Entrada">Entrada (aumenta stock)</option>
+                <option value="Salida">Salida (disminuye stock)</option>
+                <option value="Ajuste">Ajuste (modificación)</option>
               </select>
             </div>
 
@@ -315,13 +448,13 @@ export default function Kardex() {
               id="observaciones"
               name="observaciones"
               rows="3"
-              placeholder="Ej. Compra a proveedor, devolución, merma de almacén..."
+              placeholder="Ej. Compra a proveedor, devolución, merma de almacén…"
               value={form.observaciones}
               onChange={handleChange}
             />
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
+          <div className="form-actions">
             <button
               type="button"
               className="btn btn-secondary"
@@ -330,27 +463,28 @@ export default function Kardex() {
               Cancelar
             </button>
             <button type="submit" className="btn btn-primary" disabled={guardando}>
-              {guardando ? 'Registrando…' : 'Registrar Movimiento'}
+              {guardando ? 'Registrando…' : 'Registrar movimiento'}
             </button>
           </div>
         </form>
       </Modal>
 
-      {/* Modal Ver Detalle de Movimiento */}
       <Modal
         isOpen={modalDetalleOpen}
         onClose={() => setModalDetalleOpen(false)}
-        title={`Detalle de Movimiento #${movimientoSeleccionado?.id}`}
+        title={`Detalle de movimiento #${movimientoSeleccionado?.id ?? ''}`}
       >
         {movimientoSeleccionado && (
           <div className="kardex-detail-grid">
             <div className="kardex-detail-item">
               <span className="kardex-detail-label">Producto</span>
-              <span className="kardex-detail-value">{movimientoSeleccionado.Producto?.nombre}</span>
+              <span className="kardex-detail-value">
+                {movimientoSeleccionado.Producto?.nombre}
+              </span>
             </div>
 
             <div className="kardex-detail-item">
-              <span className="kardex-detail-label">Tipo de Movimiento</span>
+              <span className="kardex-detail-label">Tipo de movimiento</span>
               <span className="kardex-detail-value">
                 <Badge tipo={movimientoSeleccionado.tipo_movimiento}>
                   {movimientoSeleccionado.tipo_movimiento}
@@ -359,43 +493,56 @@ export default function Kardex() {
             </div>
 
             <div className="kardex-detail-item">
-              <span className="kardex-detail-label">Cantidad Afectada</span>
-              <span className="kardex-detail-value" style={{ fontWeight: 700 }}>
+              <span className="kardex-detail-label">Cantidad afectada</span>
+              <span
+                className={`kardex-detail-value kardex-qty ${
+                  movimientoSeleccionado.tipo_movimiento === 'Salida'
+                    ? 'kardex-qty--out'
+                    : 'kardex-qty--in'
+                }`}
+              >
                 {movimientoSeleccionado.tipo_movimiento === 'Salida'
                   ? `-${movimientoSeleccionado.cantidad}`
-                  : `+${movimientoSeleccionado.cantidad}`} unidades
+                  : `+${movimientoSeleccionado.cantidad}`}{' '}
+                unidades
               </span>
             </div>
 
             <div className="kardex-detail-item">
-              <span className="kardex-detail-label">Stock Actual del Producto</span>
+              <span className="kardex-detail-label">Stock actual del producto</span>
               <span className="kardex-detail-value">
                 {movimientoSeleccionado.Producto?.stock ?? '-'} unds.
               </span>
             </div>
 
             <div className="kardex-detail-item">
-              <span className="kardex-detail-label">Usuario Responsable</span>
-              <span className="kardex-detail-value">{movimientoSeleccionado.Usuario?.nombre || 'Sistema'}</span>
-            </div>
-
-            <div className="kardex-detail-item">
-              <span className="kardex-detail-label">Fecha y Hora de Registro</span>
+              <span className="kardex-detail-label">Usuario responsable</span>
               <span className="kardex-detail-value">
-                {new Date(movimientoSeleccionado.fecha_hora || movimientoSeleccionado.createdAt).toLocaleString('es-PE')}
+                {movimientoSeleccionado.Usuario?.nombre || 'Sistema'}
               </span>
             </div>
 
-            <div className="kardex-detail-item" style={{ gridColumn: '1 / -1' }}>
+            <div className="kardex-detail-item">
+              <span className="kardex-detail-label">Fecha y hora de registro</span>
+              <span className="kardex-detail-value">
+                {new Date(
+                  movimientoSeleccionado.fecha_hora ||
+                    movimientoSeleccionado.createdAt
+                ).toLocaleString('es-PE')}
+              </span>
+            </div>
+
+            <div className="kardex-detail-item kardex-detail-item--full">
               <span className="kardex-detail-label">Observaciones</span>
               <span className="kardex-detail-value">
-                {movimientoSeleccionado.observaciones || 'Sin observaciones registradas.'}
+                {movimientoSeleccionado.observaciones ||
+                  'Sin observaciones registradas.'}
               </span>
             </div>
           </div>
         )}
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
+        <div className="form-actions kardex-detail-actions">
           <button
             type="button"
             className="btn btn-secondary"
