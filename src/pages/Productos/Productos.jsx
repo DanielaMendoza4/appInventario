@@ -7,7 +7,15 @@ import Modal from '../../components/Modal/Modal';
 import { TopbarAction } from '../../components/Layout/TopbarAction';
 import SearchInput from '../../components/SearchInput/SearchInput';
 import Pagination from '../../components/Pagination/Pagination';
-import { IconPlus, IconEdit, IconDelete } from '../../components/Icons/Icons';
+import Card from '../../components/ui/Card';
+import Chip from '../../components/ui/Chip';
+import DataTable from '../../components/ui/DataTable';
+import {
+  IconPlus,
+  IconEdit,
+  IconDelete,
+  IconProductos,
+} from '../../components/Icons/Icons';
 
 const formVacio = {
   nombre: '',
@@ -17,6 +25,9 @@ const formVacio = {
   categoria_id: '',
   proveedor_id: '',
 };
+
+const fetchProductosData = () =>
+  Promise.all([getProductos(), getCategorias(), getProveedores()]);
 
 export default function Productos() {
   const [productos, setProductos] = useState([]);
@@ -30,17 +41,39 @@ export default function Productos() {
   const [formError, setFormError] = useState('');
   const [guardando, setGuardando] = useState(false);
   const [busqueda, setBusqueda] = useState('');
+  const [categoriaFiltro, setCategoriaFiltro] = useState('todas');
   const [paginaActual, setPaginaActual] = useState(1);
   const itemsPorPagina = 5;
+
+  useEffect(() => {
+    let cancelado = false;
+
+    fetchProductosData()
+      .then(([prods, cats, provs]) => {
+        if (cancelado) return;
+        setProductos(prods);
+        setCategorias(cats);
+        setProveedores(provs);
+        setError('');
+      })
+      .catch((err) => {
+        if (!cancelado) {
+          setError(err.response?.data?.error || 'Error al cargar los productos');
+        }
+      })
+      .finally(() => {
+        if (!cancelado) setLoading(false);
+      });
+
+    return () => {
+      cancelado = true;
+    };
+  }, []);
 
   const cargarDatos = async () => {
     try {
       setLoading(true);
-      const [prods, cats, provs] = await Promise.all([
-        getProductos(),
-        getCategorias(),
-        getProveedores(),
-      ]);
+      const [prods, cats, provs] = await fetchProductosData();
       setProductos(prods);
       setCategorias(cats);
       setProveedores(provs);
@@ -51,10 +84,6 @@ export default function Productos() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    cargarDatos();
-  }, []);
 
   const abrirModalNuevo = () => {
     setEditandoId(null);
@@ -148,18 +177,106 @@ export default function Productos() {
     }
   };
 
-  // Filtrado de productos por nombre o categoría
+  // Filtrado por categoría + búsqueda, antes de paginar
   const productosFiltrados = productos.filter((p) => {
+    const coincideCategoria =
+      categoriaFiltro === 'todas' || String(p.categoria_id) === categoriaFiltro;
     const nombre = (p.nombre || '').toLowerCase();
     const categoria = (p.Categoria?.nombre || '').toLowerCase();
     const query = busqueda.toLowerCase().trim();
-    return nombre.includes(query) || categoria.includes(query);
+    const coincideBusqueda = nombre.includes(query) || categoria.includes(query);
+
+    return coincideCategoria && coincideBusqueda;
   });
 
-  // Paginación
   const totalItems = productosFiltrados.length;
   const indiceInicio = (paginaActual - 1) * itemsPorPagina;
-  const productosPaginados = productosFiltrados.slice(indiceInicio, indiceInicio + itemsPorPagina);
+  const productosPaginados = productosFiltrados.slice(
+    indiceInicio,
+    indiceInicio + itemsPorPagina
+  );
+
+  const hayFiltros = busqueda.trim() !== '' || categoriaFiltro !== 'todas';
+
+  const columnas = [
+    {
+      key: 'id',
+      header: 'ID',
+      width: 64,
+      render: (p) => <span className="product-id">#{p.id}</span>,
+    },
+    {
+      key: 'nombre',
+      header: 'Producto',
+      render: (p) => (
+        <div className="product-cell">
+          <span className="product-cell__name">{p.nombre}</span>
+          {p.descripcion && (
+            <span className="product-cell__desc">{p.descripcion}</span>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'categoria',
+      header: 'Categoría',
+      render: (p) => p.Categoria?.nombre || '—',
+    },
+    {
+      key: 'precio',
+      header: 'Precio',
+      align: 'right',
+      render: (p) => (
+        <span className="product-price">
+          S/ {Number(p.precio).toFixed(2)}
+        </span>
+      ),
+    },
+    {
+      key: 'stock',
+      header: 'Stock',
+      render: (p) => {
+        const stockBajo = Number(p.stock) <= 5;
+        return (
+          <span
+            className={`stock-pill ${stockBajo ? 'stock-pill--low' : ''}`}
+            aria-label={`${p.stock} unidades${stockBajo ? ', stock bajo' : ''}`}
+          >
+            <span className="stock-pill__dot" aria-hidden="true" />
+            {p.stock} unds.
+          </span>
+        );
+      },
+    },
+    {
+      key: 'acciones',
+      header: 'Acciones',
+      width: 176,
+      align: 'center',
+      render: (p) => (
+        <div className="product-actions">
+          <button
+            type="button"
+            className="btn btn-warning btn-sm"
+            onClick={() => abrirModalEditar(p)}
+            title="Editar producto"
+          >
+            <IconEdit size={14} />
+            <span>Editar</span>
+          </button>
+          <button
+            type="button"
+            className="btn btn-danger btn-sm"
+            onClick={() => handleEliminar(p.id, p.nombre)}
+            title="Eliminar producto"
+          >
+            <IconDelete size={14} />
+            <span>Eliminar</span>
+          </button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="productos-page">
@@ -170,94 +287,84 @@ export default function Productos() {
         </button>
       </TopbarAction>
 
-      {error && <div className="alert alert-danger">{error}</div>}
+      <Card as="section" className="page-panel" aria-labelledby="productos-title">
+        <header className="page-panel__header">
+          <div>
+            <h2 id="productos-title" className="page-panel__title">
+              Productos registrados
+            </h2>
+            <p className="page-panel__subtitle">
+              {totalItems} de {productos.length} productos
+            </p>
+          </div>
+        </header>
 
-      <div className="card">
-        <div className="page-actions-bar" style={{ padding: '1rem 1rem 0' }}>
-          <SearchInput
-            value={busqueda}
-            onChange={(val) => {
-              setBusqueda(val);
-              setPaginaActual(1);
-            }}
-            placeholder="Buscar por Nombre o Categoría…"
-          />
+        <div className="page-toolbar">
+          <div className="productos-search">
+            <SearchInput
+              value={busqueda}
+              onChange={(val) => {
+                setBusqueda(val);
+                setPaginaActual(1);
+              }}
+              placeholder="Buscar por nombre o categoría…"
+            />
+          </div>
+
+          <div
+            className="productos-chips"
+            role="group"
+            aria-label="Filtrar por categoría"
+          >
+            <Chip
+              active={categoriaFiltro === 'todas'}
+              count={productos.length}
+              onClick={() => {
+                setCategoriaFiltro('todas');
+                setPaginaActual(1);
+              }}
+            >
+              Todas
+            </Chip>
+
+            {categorias.map((c) => (
+              <Chip
+                key={c.id}
+                active={categoriaFiltro === String(c.id)}
+                count={
+                  productos.filter(
+                    (p) => String(p.categoria_id) === String(c.id)
+                  ).length
+                }
+                onClick={() => {
+                  setCategoriaFiltro(String(c.id));
+                  setPaginaActual(1);
+                }}
+              >
+                {c.nombre}
+              </Chip>
+            ))}
+          </div>
         </div>
 
-        <div className="table-responsive">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th style={{ width: '60px' }}>ID</th>
-                <th>Nombre</th>
-                <th>Categoría</th>
-                <th>Precio</th>
-                <th>Stock</th>
-                <th style={{ width: '140px', textAlign: 'center' }}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan="6" className="empty-state">Cargando productos...</td>
-                </tr>
-              ) : productosPaginados.length === 0 ? (
-                <tr>
-                  <td colSpan="6" className="empty-state">
-                    {busqueda ? 'No se encontraron productos coincidentes' : 'No hay productos registrados'}
-                  </td>
-                </tr>
-              ) : (
-                productosPaginados.map((p) => {
-                  const stockBajo = Number(p.stock) <= 5;
-                  return (
-                    <tr key={p.id}>
-                      <td><strong>#{p.id}</strong></td>
-                      <td>
-                        <div style={{ fontWeight: 600 }}>{p.nombre}</div>
-                        {p.descripcion && (
-                          <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
-                            {p.descripcion}
-                          </div>
-                        )}
-                      </td>
-                      <td>{p.Categoria?.nombre || '-'}</td>
-                      <td style={{ fontWeight: 600 }}>
-                        S/ {Number(p.precio).toFixed(2)}
-                      </td>
-                      <td>
-                        <span className={`stock-pill ${stockBajo ? 'stock-pill--low' : ''}`}>
-                          {p.stock} unds.
-                          {stockBajo && ' ⚠️'}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="table-actions" style={{ justifyContent: 'center' }}>
-                          <button
-                            className="btn btn-warning btn-sm"
-                            onClick={() => abrirModalEditar(p)}
-                            title="Editar producto"
-                          >
-                            <IconEdit size={14} />
-                            <span>Editar</span>
-                          </button>
-                          <button
-                            className="btn btn-danger btn-sm"
-                            onClick={() => handleEliminar(p.id, p.nombre)}
-                            title="Eliminar producto"
-                          >
-                            <IconDelete size={14} />
-                            <span>Eliminar</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          columns={columnas}
+          rows={productosPaginados}
+          rowKey={(p) => p.id}
+          loading={loading}
+          error={error}
+          loadingMessage="Cargando productos…"
+          minWidth={760}
+          emptyTitle={
+            hayFiltros ? 'No se encontraron productos' : 'Aún no hay productos'
+          }
+          emptyMessage={
+            hayFiltros
+              ? 'Prueba con otro término de búsqueda o selecciona otra categoría.'
+              : 'Crea tu primer producto con el botón de la barra superior.'
+          }
+          emptyIcon={<IconProductos size={30} />}
+        />
 
         <Pagination
           totalItems={totalItems}
@@ -266,19 +373,22 @@ export default function Productos() {
           onPageChange={setPaginaActual}
           resourceName="productos"
         />
-      </div>
+      </Card>
 
-      {/* Modal Formulario Nuevo / Editar */}
       <Modal
         isOpen={modalOpen}
         onClose={cerrarModal}
-        title={editandoId ? 'Editar Producto' : 'Nuevo Producto'}
+        title={editandoId ? 'Editar producto' : 'Nuevo producto'}
       >
-        {formError && <div className="alert alert-danger">{formError}</div>}
+        {formError && (
+          <div className="alert alert-danger" role="alert">
+            {formError}
+          </div>
+        )}
 
         <form onSubmit={handleGuardar} className="form-grid">
           <div className="form-group">
-            <label htmlFor="nombre">Nombre del Producto *</label>
+            <label htmlFor="nombre">Nombre del producto *</label>
             <input
               id="nombre"
               name="nombre"
@@ -295,7 +405,7 @@ export default function Productos() {
             <textarea
               id="descripcion"
               name="descripcion"
-              rows="2"
+              rows="3"
               placeholder="Características o detalles del producto"
               value={form.descripcion}
               onChange={handleChange}
@@ -319,7 +429,7 @@ export default function Productos() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="stock">Stock Inicial *</label>
+              <label htmlFor="stock">Stock inicial *</label>
               <input
                 id="stock"
                 name="stock"
@@ -353,7 +463,7 @@ export default function Productos() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="proveedor_id">Proveedor (Opcional)</label>
+              <label htmlFor="proveedor_id">Proveedor (opcional)</label>
               <select
                 id="proveedor_id"
                 name="proveedor_id"
@@ -370,12 +480,16 @@ export default function Productos() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
+          <div className="form-actions">
             <button type="button" className="btn btn-secondary" onClick={cerrarModal}>
               Cancelar
             </button>
             <button type="submit" className="btn btn-primary" disabled={guardando}>
-              {guardando ? 'Guardando…' : editandoId ? 'Actualizar Producto' : 'Crear Producto'}
+              {guardando
+                ? 'Guardando…'
+                : editandoId
+                  ? 'Actualizar producto'
+                  : 'Crear producto'}
             </button>
           </div>
         </form>

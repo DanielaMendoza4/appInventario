@@ -237,6 +237,59 @@ select option {
   box-shadow: var(--shadow-sm);
 }
 
+/* Paneles de listado (tabla + herramientas) */
+.page-panel {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.page-panel__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1.15rem 1.25rem;
+  border-bottom: 1px solid var(--color-border);
+  background-color: rgba(31, 21, 17, 0.28);
+}
+
+.page-panel__title {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-text-main);
+}
+
+.page-panel__subtitle {
+  margin-top: 0.2rem;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.page-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+@media (max-width: 640px) {
+  .page-panel__header {
+    padding: 1rem 1.15rem;
+  }
+
+  .page-toolbar {
+    padding: 0.9rem 1.15rem;
+  }
+}
+
 /* Alertas de error / éxito */
 .alert {
   padding: 0.75rem 1rem;
