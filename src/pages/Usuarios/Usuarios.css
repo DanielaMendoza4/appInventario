@@ -3,3 +3,47 @@
   flex-direction: column;
   gap: 1.25rem;
 }
+
+.usuarios-search {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.usuarios-chips {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+.user-name {
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.user-email {
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 640px) {
+  .usuarios-search {
+    flex-basis: 100%;
+  }
+
+  .usuarios-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .usuarios-chips .ui-chip {
+    flex-shrink: 0;
+  }
+
+  .table-actions .btn {
+    min-height: 44px;
+  }
+}

@@ -6,7 +6,14 @@ import { TopbarAction } from '../../components/Layout/TopbarAction';
 import Badge from '../../components/Badge/Badge';
 import SearchInput from '../../components/SearchInput/SearchInput';
 import Pagination from '../../components/Pagination/Pagination';
-import { IconPlus, IconEdit } from '../../components/Icons/Icons';
+import Card from '../../components/ui/Card';
+import Chip from '../../components/ui/Chip';
+import DataTable from '../../components/ui/DataTable';
+import {
+  IconPlus,
+  IconEdit,
+  IconUsuarios,
+} from '../../components/Icons/Icons';
 
 const formVacio = {
   nombre: '',
@@ -15,6 +22,8 @@ const formVacio = {
   rol: 'Almacenero',
   estado: 'Activo',
 };
+
+const estadoDe = (u) => u.estado || 'Activo';
 
 export default function Usuarios() {
   const [usuarios, setUsuarios] = useState([]);
@@ -26,8 +35,32 @@ export default function Usuarios() {
   const [formError, setFormError] = useState('');
   const [guardando, setGuardando] = useState(false);
   const [busqueda, setBusqueda] = useState('');
+  const [estadoFiltro, setEstadoFiltro] = useState('todos');
   const [paginaActual, setPaginaActual] = useState(1);
   const itemsPorPagina = 5;
+
+  useEffect(() => {
+    let cancelado = false;
+
+    getUsuarios()
+      .then((data) => {
+        if (cancelado) return;
+        setUsuarios(data);
+        setError('');
+      })
+      .catch((err) => {
+        if (!cancelado) {
+          setError(err.response?.data?.error || 'Error al cargar usuarios');
+        }
+      })
+      .finally(() => {
+        if (!cancelado) setLoading(false);
+      });
+
+    return () => {
+      cancelado = true;
+    };
+  }, []);
 
   const cargarUsuarios = async () => {
     try {
@@ -42,10 +75,6 @@ export default function Usuarios() {
     }
   };
 
-  useEffect(() => {
-    cargarUsuarios();
-  }, []);
-
   const abrirModalNuevo = () => {
     setEditandoId(null);
     setForm(formVacio);
@@ -58,7 +87,7 @@ export default function Usuarios() {
     setForm({
       nombre: u.nombre || '',
       email: u.email || '',
-      password: '', // En blanco al editar para no sobrescribir a menos que el usuario la cambie
+      password: '',
       rol: u.rol || 'Almacenero',
       estado: u.estado || 'Activo',
     });
@@ -138,18 +167,89 @@ export default function Usuarios() {
     }
   };
 
-  // Filtrado por Nombre o Email
+  // Filtrado por estado + búsqueda, antes de paginar
   const filtrados = usuarios.filter((u) => {
+    const coincideEstado =
+      estadoFiltro === 'todos' || estadoDe(u) === estadoFiltro;
     const nom = (u.nombre || '').toLowerCase();
     const mail = (u.email || '').toLowerCase();
     const q = busqueda.toLowerCase().trim();
-    return nom.includes(q) || mail.includes(q);
+    const coincideBusqueda = nom.includes(q) || mail.includes(q);
+
+    return coincideEstado && coincideBusqueda;
   });
 
-  // Paginación
   const totalItems = filtrados.length;
   const indiceInicio = (paginaActual - 1) * itemsPorPagina;
   const paginados = filtrados.slice(indiceInicio, indiceInicio + itemsPorPagina);
+  const hayFiltros = busqueda.trim() !== '' || estadoFiltro !== 'todos';
+
+  const totalActivos = usuarios.filter((u) => estadoDe(u) === 'Activo').length;
+  const totalInactivos = usuarios.length - totalActivos;
+
+  const columnas = [
+    {
+      key: 'id',
+      header: 'ID',
+      width: 64,
+      render: (u) => <span className="row-id">#{u.id}</span>,
+    },
+    {
+      key: 'nombre',
+      header: 'Nombre',
+      render: (u) => <span className="user-name">{u.nombre}</span>,
+    },
+    {
+      key: 'email',
+      header: 'Correo electrónico',
+      render: (u) => <span className="user-email">{u.email}</span>,
+    },
+    {
+      key: 'rol',
+      header: 'Rol',
+      render: (u) => u.rol || '—',
+    },
+    {
+      key: 'estado',
+      header: 'Estado',
+      width: 120,
+      align: 'center',
+      render: (u) => (
+        <Badge tipo={estadoDe(u)}>{estadoDe(u)}</Badge>
+      ),
+    },
+    {
+      key: 'acciones',
+      header: 'Acciones',
+      width: 200,
+      align: 'center',
+      render: (u) => (
+        <div className="table-actions table-actions--center">
+          <button
+            type="button"
+            className="btn btn-warning btn-sm"
+            onClick={() => abrirModalEditar(u)}
+            title="Editar usuario"
+          >
+            <IconEdit size={14} />
+            <span>Editar</span>
+          </button>
+          <button
+            type="button"
+            className={`btn btn-sm ${
+              u.estado === 'Activo' ? 'btn-outline-danger' : 'btn-secondary'
+            }`}
+            onClick={() => toggleEstado(u)}
+            title={
+              u.estado === 'Activo' ? 'Desactivar usuario' : 'Activar usuario'
+            }
+          >
+            {u.estado === 'Activo' ? 'Desactivar' : 'Activar'}
+          </button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="usuarios-page">
@@ -160,80 +260,86 @@ export default function Usuarios() {
         </button>
       </TopbarAction>
 
-      {error && <div className="alert alert-danger">{error}</div>}
+      <Card as="section" className="page-panel" aria-labelledby="usuarios-title">
+        <header className="page-panel__header">
+          <div>
+            <h2 id="usuarios-title" className="page-panel__title">
+              Usuarios registrados
+            </h2>
+            <p className="page-panel__subtitle">
+              {totalItems} de {usuarios.length} usuarios
+            </p>
+          </div>
+        </header>
 
-      <div className="card">
-        <div className="page-actions-bar" style={{ padding: '1rem 1rem 0' }}>
-          <SearchInput
-            value={busqueda}
-            onChange={(val) => {
-              setBusqueda(val);
-              setPaginaActual(1);
-            }}
-            placeholder="Buscar por Nombre o Email…"
-          />
+        <div className="page-toolbar">
+          <div className="usuarios-search">
+            <SearchInput
+              value={busqueda}
+              onChange={(val) => {
+                setBusqueda(val);
+                setPaginaActual(1);
+              }}
+              placeholder="Buscar por nombre o email…"
+            />
+          </div>
+
+          <div
+            className="usuarios-chips"
+            role="group"
+            aria-label="Filtrar por estado"
+          >
+            <Chip
+              active={estadoFiltro === 'todos'}
+              count={usuarios.length}
+              onClick={() => {
+                setEstadoFiltro('todos');
+                setPaginaActual(1);
+              }}
+            >
+              Todos
+            </Chip>
+            <Chip
+              active={estadoFiltro === 'Activo'}
+              count={totalActivos}
+              onClick={() => {
+                setEstadoFiltro('Activo');
+                setPaginaActual(1);
+              }}
+            >
+              Activos
+            </Chip>
+            <Chip
+              active={estadoFiltro === 'Inactivo'}
+              count={totalInactivos}
+              onClick={() => {
+                setEstadoFiltro('Inactivo');
+                setPaginaActual(1);
+              }}
+            >
+              Inactivos
+            </Chip>
+          </div>
         </div>
 
-        <div className="table-responsive">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th style={{ width: '60px' }}>ID</th>
-                <th>Nombre</th>
-                <th>Correo Electrónico</th>
-                <th>Rol</th>
-                <th style={{ width: '120px', textAlign: 'center' }}>Estado</th>
-                <th style={{ width: '180px', textAlign: 'center' }}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan="6" className="empty-state">Cargando usuarios...</td>
-                </tr>
-              ) : paginados.length === 0 ? (
-                <tr>
-                  <td colSpan="6" className="empty-state">
-                    {busqueda ? 'No se encontraron usuarios coincidentes' : 'No hay usuarios registrados'}
-                  </td>
-                </tr>
-              ) : (
-                paginados.map((u) => (
-                  <tr key={u.id}>
-                    <td><strong>#{u.id}</strong></td>
-                    <td><strong>{u.nombre}</strong></td>
-                    <td>{u.email}</td>
-                    <td>{u.rol}</td>
-                    <td style={{ textAlign: 'center' }}>
-                      <Badge tipo={u.estado || 'Activo'}>
-                        {u.estado || 'Activo'}
-                      </Badge>
-                    </td>
-                    <td>
-                      <div className="table-actions" style={{ justifyContent: 'center' }}>
-                        <button
-                          className="btn btn-warning btn-sm"
-                          onClick={() => abrirModalEditar(u)}
-                          title="Editar usuario"
-                        >
-                          <IconEdit size={14} />
-                          <span>Editar</span>
-                        </button>
-                        <button
-                          className={`btn btn-sm ${u.estado === 'Activo' ? 'btn-outline-danger' : 'btn-secondary'}`}
-                          onClick={() => toggleEstado(u)}
-                          title={u.estado === 'Activo' ? 'Desactivar usuario' : 'Activar usuario'}
-                        >
-                          {u.estado === 'Activo' ? 'Desactivar' : 'Activar'}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          columns={columnas}
+          rows={paginados}
+          rowKey={(u) => u.id}
+          loading={loading}
+          error={error}
+          loadingMessage="Cargando usuarios…"
+          minWidth={820}
+          emptyTitle={
+            hayFiltros ? 'No se encontraron usuarios' : 'Aún no hay usuarios'
+          }
+          emptyMessage={
+            hayFiltros
+              ? 'Prueba con otro término de búsqueda o cambia el estado.'
+              : 'Crea el primer usuario con el botón de la barra superior.'
+          }
+          emptyIcon={<IconUsuarios size={30} />}
+        />
 
         <Pagination
           totalItems={totalItems}
@@ -242,19 +348,22 @@ export default function Usuarios() {
           onPageChange={setPaginaActual}
           resourceName="usuarios"
         />
-      </div>
+      </Card>
 
-      {/* Modal Nuevo / Editar Usuario */}
       <Modal
         isOpen={modalOpen}
         onClose={cerrarModal}
-        title={editandoId ? 'Editar Usuario' : 'Nuevo Usuario'}
+        title={editandoId ? 'Editar usuario' : 'Nuevo usuario'}
       >
-        {formError && <div className="alert alert-danger">{formError}</div>}
+        {formError && (
+          <div className="alert alert-danger" role="alert">
+            {formError}
+          </div>
+        )}
 
         <form onSubmit={handleGuardar} className="form-grid">
           <div className="form-group">
-            <label htmlFor="nombre">Nombre Completo *</label>
+            <label htmlFor="nombre">Nombre completo *</label>
             <input
               id="nombre"
               name="nombre"
@@ -267,7 +376,7 @@ export default function Usuarios() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="email">Correo Electrónico *</label>
+            <label htmlFor="email">Correo electrónico *</label>
             <input
               id="email"
               name="email"
@@ -281,14 +390,19 @@ export default function Usuarios() {
 
           <div className="form-group">
             <label htmlFor="password">
-              Contraseña {editandoId ? '(dejar en blanco para mantener la actual)' : '*'}
+              Contraseña{' '}
+              {editandoId
+                ? '(dejar en blanco para mantener la actual)'
+                : '*'}
             </label>
             <input
               id="password"
               name="password"
               type="password"
               autoComplete="new-password"
-              placeholder={editandoId ? '••••••••' : 'Mínimo 6 caracteres'}
+              placeholder={
+                editandoId ? '••••••••' : 'Mínimo 6 caracteres'
+              }
               value={form.password}
               onChange={handleChange}
               required={!editandoId}
@@ -297,7 +411,7 @@ export default function Usuarios() {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="rol">Rol de Usuario *</label>
+              <label htmlFor="rol">Rol de usuario *</label>
               <select
                 id="rol"
                 name="rol"
@@ -326,12 +440,16 @@ export default function Usuarios() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
+          <div className="form-actions">
             <button type="button" className="btn btn-secondary" onClick={cerrarModal}>
               Cancelar
             </button>
             <button type="submit" className="btn btn-primary" disabled={guardando}>
-              {guardando ? 'Guardando…' : editandoId ? 'Actualizar Usuario' : 'Crear Usuario'}
+              {guardando
+                ? 'Guardando…'
+                : editandoId
+                  ? 'Actualizar usuario'
+                  : 'Crear usuario'}
             </button>
           </div>
         </form>
