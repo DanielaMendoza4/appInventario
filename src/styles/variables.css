@@ -1,61 +1,78 @@
 :root {
-  /* Colores institucionales y tema */
-  --color-primary: #2563eb;
-  --color-primary-hover: #1d4ed8;
-  --color-primary-light: #eff6ff;
+  /* ===== Paleta café (ajustar aquí cambia todo el tema) ===== */
+  --coffee-bg: #1F1511;
+  --coffee-sidebar: #2A1D17;
+  --coffee-card: #3D2A22;
+  --coffee-hover: #4D3629;
+  --coffee-border: #5E4234;
+  --coffee-input-border: #7A5A47;
+  --coffee-accent: #C9A07F;
+  --coffee-on-accent: #1F1511;
+  --coffee-secondary: #8A6149;
+  --coffee-text: #F5E9DF;
+  --coffee-muted: #D2B8A3;
 
-  /* Barra lateral (Sidebar navy oscuro) */
-  --color-sidebar-bg: #0f172a;
-  --color-sidebar-header: #020617;
-  --color-sidebar-text: #94a3b8;
-  --color-sidebar-hover: #1e293b;
-  --color-sidebar-active: #2563eb;
-  --color-sidebar-active-text: #ffffff;
+  /* ===== Alias semánticos (compatibilidad con componentes existentes) ===== */
+  --color-primary: var(--coffee-accent);
+  --color-primary-hover: #D8B592;
+  --color-primary-light: rgba(201, 160, 127, 0.16);
 
-  /* Fondo general y tarjetas */
-  --color-bg: #f3f4f6;
-  --color-card-bg: #ffffff;
-  --color-border: #e2e8f0;
-  --color-border-subtle: #f1f5f9;
+  --color-sidebar-bg: var(--coffee-sidebar);
+  --color-sidebar-header: var(--coffee-bg);
+  --color-sidebar-text: var(--coffee-muted);
+  --color-sidebar-hover: var(--coffee-hover);
+  --color-sidebar-active: var(--coffee-accent);
+  --color-sidebar-active-text: var(--coffee-on-accent);
 
-  /* Tipografía y textos */
-  --color-text-main: #0f172a;
-  --color-text-muted: #64748b;
-  --color-text-light: #94a3b8;
+  --color-bg: var(--coffee-bg);
+  --color-card-bg: var(--coffee-card);
+  --color-hover: var(--coffee-hover);
+  --color-border: var(--coffee-border);
+  --color-border-subtle: #4A342A;
+  --color-input-border: var(--coffee-input-border);
 
-  /* Estados y badges */
-  --color-success: #16a34a;
-  --color-success-bg: #dcfce7;
-  --color-success-text: #166534;
+  --color-text-main: var(--coffee-text);
+  --color-text-muted: var(--coffee-muted);
+  --color-text-light: #B99C86;
+  --color-secondary: var(--coffee-secondary);
+  --color-on-accent: var(--coffee-on-accent);
 
-  --color-danger: #dc2626;
-  --color-danger-bg: #fee2e2;
-  --color-danger-text: #991b1b;
+  /* Estados (adaptados al tema oscuro) */
+  --color-success: #8FBF8B;
+  --color-success-bg: rgba(143, 191, 139, 0.14);
+  --color-success-text: #B7D8B4;
 
-  --color-warning: #d97706;
-  --color-warning-bg: #fef3c7;
-  --color-warning-text: #92400e;
+  --color-danger: #E0A08F;
+  --color-danger-bg: rgba(224, 160, 143, 0.14);
+  --color-danger-text: #F0C4B8;
 
-  --color-info: #0284c7;
-  --color-info-bg: #e0f2fe;
-  --color-info-text: #0369a1;
+  --color-warning: #E3C08C;
+  --color-warning-bg: rgba(227, 192, 140, 0.14);
+  --color-warning-text: #F0D5AE;
 
-  --color-neutral-bg: #f1f5f9;
-  --color-neutral-text: #475569;
+  --color-info: #9DBFD0;
+  --color-info-bg: rgba(157, 191, 208, 0.14);
+  --color-info-text: #BFD8E4;
 
-  /* Radios */
+  --color-neutral-bg: var(--coffee-hover);
+  --color-neutral-text: var(--coffee-muted);
+
+  /* Radios (--radius-sm se conserva para no alterar botones) */
   --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
   --radius-full: 9999px;
 
   /* Sombras */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.28);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.32);
+  --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.45);
+  --shadow-accent: 0 0 0 1px rgba(201, 160, 127, 0.35), 0 12px 32px rgba(0, 0, 0, 0.35);
 
   /* Tipografía */
-  --font-family: 'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --transition: all 0.2s ease-in-out;
+  --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Space Grotesk', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
