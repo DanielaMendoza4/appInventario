@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import './Usuarios.css';
 import { getUsuarios, createUsuario, updateUsuario } from '../../api/usuarios';
 import Modal from '../../components/Modal/Modal';
+import { TopbarAction } from '../../components/Layout/TopbarAction';
 import Badge from '../../components/Badge/Badge';
 import SearchInput from '../../components/SearchInput/SearchInput';
 import Pagination from '../../components/Pagination/Pagination';
@@ -152,13 +153,12 @@ export default function Usuarios() {
 
   return (
     <div className="usuarios-page">
-      <div className="page-header">
-        <h2 className="page-title">Usuarios</h2>
+      <TopbarAction>
         <button className="btn btn-primary" onClick={abrirModalNuevo}>
           <IconPlus size={16} />
-          <span>+ Nuevo Usuario</span>
+          <span>Nuevo usuario</span>
         </button>
-      </div>
+      </TopbarAction>
 
       {error && <div className="alert alert-danger">{error}</div>}
 

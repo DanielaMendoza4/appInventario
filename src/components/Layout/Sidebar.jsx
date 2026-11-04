@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import './Sidebar.css';
+import { useAuth } from '../../context/AuthContext';
 import {
   IconDashboard,
   IconProductos,
@@ -7,46 +8,47 @@ import {
   IconProveedores,
   IconKardex,
   IconUsuarios,
-  IconConfiguracion,
+  IconLogout,
 } from '../Icons/Icons';
 
 const menuItems = [
-  { ruta: '/dashboard', etiqueta: 'Inicio (Dashboard)', icono: IconDashboard },
+  { ruta: '/dashboard', etiqueta: 'Dashboard', icono: IconDashboard },
   { ruta: '/productos', etiqueta: 'Productos', icono: IconProductos },
   { ruta: '/categorias', etiqueta: 'Categorías', icono: IconCategorias },
   { ruta: '/proveedores', etiqueta: 'Proveedores', icono: IconProveedores },
   { ruta: '/kardex', etiqueta: 'Kardex / Movimientos', icono: IconKardex },
   { ruta: '/usuarios', etiqueta: 'Usuarios', icono: IconUsuarios },
-  { ruta: '/configuracion', etiqueta: 'Configuración', icono: IconConfiguracion, deshabilitado: true },
 ];
 
 export default function Sidebar({ isOpen, onClose }) {
+  const { user, logout } = useAuth();
+
+  const nombre = user?.nombre || 'Usuario';
+  const rol = user?.rol || 'Almacenero';
+  const inicial = nombre.charAt(0).toUpperCase();
+
   return (
     <>
-      {isOpen && <div className="sidebar-backdrop" onClick={onClose} />}
+      {isOpen && (
+        <div
+          className="sidebar-backdrop"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
 
       <aside className={`sidebar ${isOpen ? 'sidebar--open' : ''}`}>
         <div className="sidebar__brand">
-          <div className="sidebar__logo-badge">S</div>
+          <div className="sidebar__logo-badge" aria-hidden="true">S</div>
           <div className="sidebar__brand-text">
-            <h2>SENATI</h2>
+            <h2>SENATI Inventario</h2>
             <p>Sistema de Inventario</p>
           </div>
         </div>
 
-        <nav className="sidebar__nav">
+        <nav className="sidebar__nav" aria-label="Navegación principal">
           {menuItems.map((item) => {
             const Icon = item.icono;
-
-            if (item.deshabilitado) {
-              return (
-                <div key={item.etiqueta} className="sidebar__link sidebar__link--disabled" title="Próximamente">
-                  <Icon size={18} />
-                  <span>{item.etiqueta}</span>
-                  <span className="sidebar__disabled-tag">Inactivo</span>
-                </div>
-              );
-            }
 
             return (
               <NavLink
@@ -63,6 +65,25 @@ export default function Sidebar({ isOpen, onClose }) {
             );
           })}
         </nav>
+
+        <div className="sidebar__user">
+          <div className="sidebar__user-row">
+            <div className="sidebar__avatar" aria-hidden="true">{inicial}</div>
+            <div className="sidebar__user-details">
+              <span className="sidebar__user-name">{nombre}</span>
+              <span className="sidebar__user-role">{rol}</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="sidebar__logout-btn"
+            onClick={logout}
+          >
+            <IconLogout size={16} />
+            <span>Cerrar sesión</span>
+          </button>
+        </div>
 
         <div className="sidebar__footer">
           Laboratorio #9 — SENATI

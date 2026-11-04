@@ -4,6 +4,7 @@ import { getMovimientos, createMovimiento, anularMovimiento } from '../../api/mo
 import { getProductos } from '../../api/productos';
 import { useAuth } from '../../context/AuthContext';
 import Modal from '../../components/Modal/Modal';
+import { TopbarAction } from '../../components/Layout/TopbarAction';
 import Badge from '../../components/Badge/Badge';
 import SearchInput from '../../components/SearchInput/SearchInput';
 import Pagination from '../../components/Pagination/Pagination';
@@ -144,13 +145,12 @@ export default function Kardex() {
 
   return (
     <div className="kardex-page">
-      <div className="page-header">
-        <h2 className="page-title">Kardex / Movimientos</h2>
+      <TopbarAction>
         <button className="btn btn-primary" onClick={abrirRegistro}>
           <IconPlus size={16} />
-          <span>+ Registrar Movimiento</span>
+          <span>Registrar movimiento</span>
         </button>
-      </div>
+      </TopbarAction>
 
       {error && <div className="alert alert-danger">{error}</div>}
 

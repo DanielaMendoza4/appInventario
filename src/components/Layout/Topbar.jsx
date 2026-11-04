@@ -1,23 +1,41 @@
 import { useLocation } from 'react-router-dom';
 import './Topbar.css';
-import { useAuth } from '../../context/AuthContext';
-import { IconMenu, IconLogout } from '../Icons/Icons';
+import { TopbarActionSlot } from './TopbarAction';
+import { IconMenu } from '../Icons/Icons';
 
-const titulosRutas = {
-  '/dashboard': 'Panel Principal',
-  '/productos': 'Catálogo de Productos',
-  '/categorias': 'Gestión de Categorías',
-  '/proveedores': 'Directorio de Proveedores',
-  '/kardex': 'Kardex de Movimientos',
-  '/usuarios': 'Administración de Usuarios',
+const PAGE_META = {
+  '/dashboard': {
+    titulo: 'Dashboard',
+    subtitulo: 'Resumen general del inventario',
+  },
+  '/productos': {
+    titulo: 'Productos',
+    subtitulo: 'Gestiona el catálogo de productos',
+  },
+  '/categorias': {
+    titulo: 'Categorías',
+    subtitulo: 'Organiza los productos por familia',
+  },
+  '/proveedores': {
+    titulo: 'Proveedores',
+    subtitulo: 'Directorio de empresas proveedoras',
+  },
+  '/kardex': {
+    titulo: 'Kardex / Movimientos',
+    subtitulo: 'Historial de entradas, salidas y ajustes',
+  },
+  '/usuarios': {
+    titulo: 'Usuarios',
+    subtitulo: 'Administra el acceso al sistema',
+  },
 };
 
 export default function Topbar({ onToggleMenu }) {
-  const { user, logout } = useAuth();
-  const location = useLocation();
-
-  const tituloActual = titulosRutas[location.pathname] || 'Sistema de Inventario';
-  const inicial = (user?.nombre || 'U').charAt(0).toUpperCase();
+  const { pathname } = useLocation();
+  const meta = PAGE_META[pathname] || {
+    titulo: 'Sistema de Inventario',
+    subtitulo: 'SENATI',
+  };
 
   return (
     <header className="topbar">
@@ -26,32 +44,20 @@ export default function Topbar({ onToggleMenu }) {
           type="button"
           className="topbar__menu-toggle"
           onClick={onToggleMenu}
-          aria-label="Abrir menú"
+          aria-label="Abrir menú de navegación"
         >
           <IconMenu size={20} />
         </button>
-        <span className="topbar__title">{tituloActual}</span>
-      </div>
 
-      <div className="topbar__right">
-        <div className="topbar__user-info">
-          <div className="topbar__avatar">{inicial}</div>
-          <div className="topbar__user-details">
-            <span className="topbar__user-name">{user?.nombre || 'Usuario'}</span>
-            <span className="topbar__user-role">{user?.rol || 'Almacenero'}</span>
-          </div>
+        <div className="topbar__heading">
+          <h1 className="topbar__title">{meta.titulo}</h1>
+          {meta.subtitulo && (
+            <p className="topbar__subtitle">{meta.subtitulo}</p>
+          )}
         </div>
-
-        <button
-          type="button"
-          className="topbar__logout-btn"
-          onClick={logout}
-          title="Cerrar sesión"
-        >
-          <IconLogout size={15} />
-          <span>Cerrar sesión</span>
-        </button>
       </div>
+
+      <TopbarActionSlot />
     </header>
   );
 }

@@ -1,11 +1,11 @@
 .layout-container {
-  display: flex;
   min-height: 100vh;
   background-color: var(--color-bg);
 }
 
 .layout-main-wrapper {
-  flex: 1;
+  margin-left: 280px;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -13,12 +13,31 @@
 
 .layout-content {
   flex: 1;
-  padding: 1.75rem 2rem;
-  overflow-y: auto;
+  width: 100%;
+  padding: 2rem 2.25rem 2.5rem;
+}
+
+@media (min-width: 1600px) {
+  .layout-content {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+}
+
+@media (max-width: 1023px) {
+  .layout-main-wrapper {
+    margin-left: 0;
+  }
 }
 
 @media (max-width: 768px) {
   .layout-content {
-    padding: 1rem;
+    padding: 1.25rem 1rem 2rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .layout-content {
+    padding: 1rem 0.875rem 1.75rem;
   }
 }

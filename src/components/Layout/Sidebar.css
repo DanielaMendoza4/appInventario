@@ -1,128 +1,221 @@
 .sidebar {
-  width: 260px;
+  width: 280px;
   background-color: var(--color-sidebar-bg);
   color: var(--color-sidebar-text);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  min-height: 100vh;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1050;
+  border-right: 1px solid var(--color-border);
   transition: transform 0.25s ease-in-out;
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+/* Marca */
 .sidebar__brand {
-  padding: 1.25rem 1.5rem;
+  padding: 1.5rem 1.5rem 1.25rem;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 0.875rem;
+  border-bottom: 1px solid rgba(201, 160, 127, 0.12);
 }
 
 .sidebar__logo-badge {
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
   background: var(--color-primary);
-  color: #fff;
-  border-radius: var(--radius-sm);
+  color: var(--color-on-accent);
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: var(--font-display);
   font-weight: 700;
-  font-size: 1.125rem;
-  letter-spacing: -0.5px;
+  font-size: 1.375rem;
+  line-height: 1;
+  box-shadow: 0 6px 16px rgba(201, 160, 127, 0.25);
 }
 
 .sidebar__brand-text h2 {
-  font-size: 0.9375rem;
+  font-family: var(--font-display);
+  font-size: 1rem;
   font-weight: 700;
-  color: #ffffff;
-  letter-spacing: 0.5px;
+  color: var(--color-text-main);
+  letter-spacing: -0.01em;
   margin: 0;
+  line-height: 1.2;
 }
 
 .sidebar__brand-text p {
   font-size: 0.6875rem;
-  color: var(--color-sidebar-text);
-  margin: 0;
+  color: var(--color-text-light);
+  margin: 0.15rem 0 0;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.08em;
 }
 
+/* Navegación */
 .sidebar__nav {
-  padding: 1rem 0.75rem;
+  padding: 1rem 0.875rem;
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
   flex: 1;
+  overflow-y: auto;
 }
 
 .sidebar__link {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.625rem 0.875rem;
+  padding: 0.7rem 0.875rem;
   color: var(--color-sidebar-text);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   font-size: 0.875rem;
   font-weight: 500;
   transition: var(--transition);
 }
 
-.sidebar__link:hover:not(.sidebar__link--disabled) {
+.sidebar__link svg {
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.sidebar__link:hover {
   background-color: var(--color-sidebar-hover);
-  color: #ffffff;
+  color: var(--color-text-main);
+  transform: translateX(4px);
 }
 
-.sidebar__link--active {
-  background-color: var(--color-sidebar-active) !important;
-  color: #ffffff !important;
-  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.4);
+.sidebar__link:hover svg {
+  opacity: 1;
 }
 
-.sidebar__link--disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-  pointer-events: none;
+.sidebar__link--active,
+.sidebar__link--active:hover {
+  background-color: var(--color-sidebar-active);
+  color: var(--color-sidebar-active-text);
+  transform: none;
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(201, 160, 127, 0.22);
 }
 
-.sidebar__disabled-tag {
-  margin-left: auto;
-  font-size: 0.625rem;
-  text-transform: uppercase;
-  background-color: rgba(255, 255, 255, 0.1);
-  padding: 0.125rem 0.375rem;
-  border-radius: var(--radius-sm);
+.sidebar__link--active svg {
+  opacity: 1;
+}
+
+/* Bloque de usuario */
+.sidebar__user {
+  padding: 1rem 1.25rem 1.125rem;
+  border-top: 1px solid rgba(201, 160, 127, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.sidebar__user-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.sidebar__avatar {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  background-color: var(--color-secondary);
+  color: var(--color-text-main);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(245, 233, 223, 0.18);
+}
+
+.sidebar__user-details {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sidebar__user-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar__user-role {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar__logout-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-main);
+  background: transparent;
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+}
+
+.sidebar__logout-btn:hover {
+  background-color: var(--color-hover);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .sidebar__footer {
-  padding: 1rem 1.25rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  font-size: 0.75rem;
+  padding: 0.875rem 1.25rem 1.125rem;
+  border-top: 1px solid rgba(201, 160, 127, 0.12);
+  font-size: 0.6875rem;
   color: var(--color-text-light);
   text-align: center;
+  letter-spacing: 0.02em;
 }
 
-/* Responsividad para móviles */
-@media (max-width: 991px) {
+/* Mobile / tablet: menú lateral deslizable */
+@media (max-width: 1023px) {
   .sidebar {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 1050;
     transform: translateX(-100%);
   }
 
   .sidebar--open {
     transform: translateX(0);
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+    box-shadow: 8px 0 32px rgba(0, 0, 0, 0.5);
   }
 
   .sidebar-backdrop {
     position: fixed;
     inset: 0;
-    background-color: rgba(15, 23, 42, 0.6);
+    background-color: rgba(15, 10, 8, 0.65);
     z-index: 1040;
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(3px);
+  }
+}
+
+@media (max-width: 380px) {
+  .sidebar {
+    width: min(300px, 88vw);
   }
 }

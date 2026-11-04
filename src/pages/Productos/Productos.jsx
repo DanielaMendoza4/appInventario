@@ -4,6 +4,7 @@ import { getProductos, createProducto, updateProducto, deleteProducto } from '..
 import { getCategorias } from '../../api/categorias';
 import { getProveedores } from '../../api/proveedores';
 import Modal from '../../components/Modal/Modal';
+import { TopbarAction } from '../../components/Layout/TopbarAction';
 import SearchInput from '../../components/SearchInput/SearchInput';
 import Pagination from '../../components/Pagination/Pagination';
 import { IconPlus, IconEdit, IconDelete } from '../../components/Icons/Icons';
@@ -162,13 +163,12 @@ export default function Productos() {
 
   return (
     <div className="productos-page">
-      <div className="page-header">
-        <h2 className="page-title">Productos</h2>
+      <TopbarAction>
         <button className="btn btn-primary" onClick={abrirModalNuevo}>
           <IconPlus size={16} />
-          <span>+ Nuevo Producto</span>
+          <span>Nuevo producto</span>
         </button>
-      </div>
+      </TopbarAction>
 
       {error && <div className="alert alert-danger">{error}</div>}
 
