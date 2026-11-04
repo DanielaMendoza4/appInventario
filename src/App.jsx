@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout/Layout';
+import ConfirmDialog from './components/ui/ConfirmDialog';
+import Toast from './components/ui/Toast';
 
 import Login from './pages/Login/Login';
 import Dashboard from './pages/Dashboard/Dashboard';
@@ -35,6 +37,9 @@ export default function App() {
           {/* Fallback global */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
+
+        <ConfirmDialog />
+        <Toast />
       </AuthProvider>
     </BrowserRouter>
   );

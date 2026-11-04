@@ -5,6 +5,8 @@ import Modal from '../../components/Modal/Modal';
 import { TopbarAction } from '../../components/Layout/TopbarAction';
 import SearchInput from '../../components/SearchInput/SearchInput';
 import Pagination from '../../components/Pagination/Pagination';
+import { requestConfirm } from '../../lib/confirm';
+import { toast } from '../../lib/toast';
 import Card from '../../components/ui/Card';
 import DataTable from '../../components/ui/DataTable';
 import {
@@ -113,8 +115,10 @@ export default function Categorias() {
     try {
       if (editandoId) {
         await updateCategoria(editandoId, payload);
+        toast.success('Categoría actualizada');
       } else {
         await createCategoria(payload);
+        toast.success('Categoría creada');
       }
       cerrarModal();
       await cargarCategorias();
@@ -126,14 +130,23 @@ export default function Categorias() {
   };
 
   const handleEliminar = async (id, nombre) => {
-    if (!window.confirm(`¿Estás seguro de eliminar la categoría "${nombre}"?`)) {
-      return;
-    }
+    const confirmado = await requestConfirm({
+      title: 'Eliminar categoría',
+      message: `¿Estás seguro de eliminar la categoría "${nombre}"?`,
+      confirmLabel: 'Eliminar',
+      tone: 'danger',
+    });
+    if (!confirmado) return;
+
     try {
       await deleteCategoria(id);
+      toast.success('Categoría eliminada');
       await cargarCategorias();
     } catch (err) {
-      alert(err.response?.data?.error || 'No se puede eliminar la categoría si tiene productos asignados');
+      toast.error(
+        err.response?.data?.error ||
+          'No se puede eliminar la categoría si tiene productos asignados'
+      );
     }
   };
 

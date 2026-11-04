@@ -5,6 +5,8 @@ import Modal from '../../components/Modal/Modal';
 import { TopbarAction } from '../../components/Layout/TopbarAction';
 import SearchInput from '../../components/SearchInput/SearchInput';
 import Pagination from '../../components/Pagination/Pagination';
+import { requestConfirm } from '../../lib/confirm';
+import { toast } from '../../lib/toast';
 import Card from '../../components/ui/Card';
 import DataTable from '../../components/ui/DataTable';
 import {
@@ -122,8 +124,10 @@ export default function Proveedores() {
     try {
       if (editandoId) {
         await updateProveedor(editandoId, payload);
+        toast.success('Proveedor actualizado');
       } else {
         await createProveedor(payload);
+        toast.success('Proveedor creado');
       }
       cerrarModal();
       await cargarProveedores();
@@ -135,14 +139,23 @@ export default function Proveedores() {
   };
 
   const handleEliminar = async (id, razonSocial) => {
-    if (!window.confirm(`¿Estás seguro de eliminar al proveedor "${razonSocial}"?`)) {
-      return;
-    }
+    const confirmado = await requestConfirm({
+      title: 'Eliminar proveedor',
+      message: `¿Estás seguro de eliminar al proveedor "${razonSocial}"?`,
+      confirmLabel: 'Eliminar',
+      tone: 'danger',
+    });
+    if (!confirmado) return;
+
     try {
       await deleteProveedor(id);
+      toast.success('Proveedor eliminado');
       await cargarProveedores();
     } catch (err) {
-      alert(err.response?.data?.error || 'No se puede eliminar el proveedor si tiene productos asociados');
+      toast.error(
+        err.response?.data?.error ||
+          'No se puede eliminar el proveedor si tiene productos asociados'
+      );
     }
   };
 

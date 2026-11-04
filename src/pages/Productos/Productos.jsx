@@ -7,6 +7,8 @@ import Modal from '../../components/Modal/Modal';
 import { TopbarAction } from '../../components/Layout/TopbarAction';
 import SearchInput from '../../components/SearchInput/SearchInput';
 import Pagination from '../../components/Pagination/Pagination';
+import { requestConfirm } from '../../lib/confirm';
+import { toast } from '../../lib/toast';
 import Card from '../../components/ui/Card';
 import Chip from '../../components/ui/Chip';
 import DataTable from '../../components/ui/DataTable';
@@ -153,8 +155,10 @@ export default function Productos() {
     try {
       if (editandoId) {
         await updateProducto(editandoId, payload);
+        toast.success('Producto actualizado');
       } else {
         await createProducto(payload);
+        toast.success('Producto creado');
       }
       cerrarModal();
       await cargarDatos();
@@ -166,14 +170,20 @@ export default function Productos() {
   };
 
   const handleEliminar = async (id, nombre) => {
-    if (!window.confirm(`¿Estás seguro de eliminar el producto "${nombre}"?`)) {
-      return;
-    }
+    const confirmado = await requestConfirm({
+      title: 'Eliminar producto',
+      message: `¿Estás seguro de eliminar el producto "${nombre}"?`,
+      confirmLabel: 'Eliminar',
+      tone: 'danger',
+    });
+    if (!confirmado) return;
+
     try {
       await deleteProducto(id);
+      toast.success('Producto eliminado');
       await cargarDatos();
     } catch (err) {
-      alert(err.response?.data?.error || 'No se pudo eliminar el producto');
+      toast.error(err.response?.data?.error || 'No se pudo eliminar el producto');
     }
   };
 

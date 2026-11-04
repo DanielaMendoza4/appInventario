@@ -8,6 +8,8 @@ import { TopbarAction } from '../../components/Layout/TopbarAction';
 import Badge from '../../components/Badge/Badge';
 import SearchInput from '../../components/SearchInput/SearchInput';
 import Pagination from '../../components/Pagination/Pagination';
+import { requestConfirm } from '../../lib/confirm';
+import { toast } from '../../lib/toast';
 import Card from '../../components/ui/Card';
 import Chip from '../../components/ui/Chip';
 import DataTable from '../../components/ui/DataTable';
@@ -149,6 +151,7 @@ export default function Kardex() {
         observaciones: form.observaciones?.trim() || null,
       });
 
+      toast.success('Movimiento registrado');
       setModalRegistroOpen(false);
       setForm(formVacio);
       await cargarDatos();
@@ -162,16 +165,20 @@ export default function Kardex() {
   };
 
   const handleAnular = async (mov) => {
-    const confirmacion = window.confirm(
-      `¿Deseas anular el movimiento #${mov.id} (${mov.tipo_movimiento} de ${mov.cantidad} unds. de "${mov.Producto?.nombre}")?\nEl stock del producto será revertido automáticamente.`
-    );
-    if (!confirmacion) return;
+    const confirmado = await requestConfirm({
+      title: 'Anular movimiento',
+      message: `¿Deseas anular el movimiento #${mov.id} (${mov.tipo_movimiento} de ${mov.cantidad} unds. de "${mov.Producto?.nombre}")?\nEl stock del producto será revertido automáticamente.`,
+      confirmLabel: 'Anular',
+      tone: 'danger',
+    });
+    if (!confirmado) return;
 
     try {
       await anularMovimiento(mov.id);
+      toast.success('Movimiento anulado');
       await cargarDatos();
     } catch (err) {
-      alert(err.response?.data?.error || 'No se pudo anular el movimiento');
+      toast.error(err.response?.data?.error || 'No se pudo anular el movimiento');
     }
   };
 

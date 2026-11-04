@@ -6,6 +6,8 @@ import { TopbarAction } from '../../components/Layout/TopbarAction';
 import Badge from '../../components/Badge/Badge';
 import SearchInput from '../../components/SearchInput/SearchInput';
 import Pagination from '../../components/Pagination/Pagination';
+import { requestConfirm } from '../../lib/confirm';
+import { toast } from '../../lib/toast';
 import Card from '../../components/ui/Card';
 import Chip from '../../components/ui/Chip';
 import DataTable from '../../components/ui/DataTable';
@@ -140,8 +142,10 @@ export default function Usuarios() {
     try {
       if (editandoId) {
         await updateUsuario(editandoId, payload);
+        toast.success('Usuario actualizado');
       } else {
         await createUsuario(payload);
+        toast.success('Usuario creado');
       }
       cerrarModal();
       await cargarUsuarios();
@@ -154,16 +158,26 @@ export default function Usuarios() {
 
   const toggleEstado = async (u) => {
     const nuevoEstado = u.estado === 'Activo' ? 'Inactivo' : 'Activo';
-    const confirmacion = window.confirm(
-      `¿Deseas cambiar el estado del usuario "${u.nombre}" a ${nuevoEstado}?`
-    );
-    if (!confirmacion) return;
+    const confirmado = await requestConfirm({
+      title: 'Cambiar estado del usuario',
+      message: `¿Deseas cambiar el estado del usuario "${u.nombre}" a ${nuevoEstado}?`,
+      confirmLabel: 'Cambiar estado',
+      tone: u.estado === 'Activo' ? 'danger' : 'default',
+    });
+    if (!confirmado) return;
 
     try {
       await updateUsuario(u.id, { estado: nuevoEstado });
+      toast.success(
+        nuevoEstado === 'Activo'
+          ? 'Usuario activado'
+          : 'Usuario desactivado'
+      );
       await cargarUsuarios();
     } catch (err) {
-      alert(err.response?.data?.error || 'No se pudo actualizar el estado');
+      toast.error(
+        err.response?.data?.error || 'No se pudo actualizar el estado'
+      );
     }
   };
 
