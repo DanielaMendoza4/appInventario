@@ -1,21 +1,28 @@
 :root {
-  /* ===== Paleta café (ajustar aquí cambia todo el tema) ===== */
-  --coffee-bg: #1F1511;
-  --coffee-sidebar: #2A1D17;
-  --coffee-card: #3D2A22;
-  --coffee-hover: #4D3629;
-  --coffee-border: #5E4234;
-  --coffee-input-border: #7A5A47;
-  --coffee-accent: #C9A07F;
-  --coffee-on-accent: #1F1511;
-  --coffee-secondary: #8A6149;
-  --coffee-text: #F5E9DF;
-  --coffee-muted: #D2B8A3;
+  color-scheme: dark;
+
+  /* Base palette; legacy coffee token names remain for compatibility. */
+  --coffee-bg: #07041a;
+  --coffee-sidebar: rgba(13, 8, 40, 0.6);
+  --coffee-card: rgba(255, 255, 255, 0.04);
+  --coffee-hover: rgba(255, 255, 255, 0.07);
+  --coffee-border: rgba(255, 255, 255, 0.09);
+  --coffee-input-border: rgba(255, 255, 255, 0.16);
+  --coffee-accent: #8b5cf6;
+  --coffee-on-accent: #ffffff;
+  --coffee-secondary: #c026d3;
+  --coffee-text: #e9e6f5;
+  --coffee-muted: #9a93b8;
+
+  --accent-glow: rgba(139, 92, 246, 0.45);
+  --accent-gradient: linear-gradient(135deg, var(--coffee-accent), var(--coffee-secondary));
+  --ambient-violet: rgba(168, 85, 247, 0.35);
+  --ambient-blue: rgba(99, 102, 241, 0.18);
 
   /* ===== Alias semánticos (compatibilidad con componentes existentes) ===== */
   --color-primary: var(--coffee-accent);
-  --color-primary-hover: #D8B592;
-  --color-primary-light: rgba(201, 160, 127, 0.16);
+  --color-primary-hover: #a78bfa;
+  --color-primary-light: rgba(139, 92, 246, 0.14);
 
   --color-sidebar-bg: var(--coffee-sidebar);
   --color-sidebar-header: var(--coffee-bg);
@@ -28,34 +35,42 @@
   --color-card-bg: var(--coffee-card);
   --color-hover: var(--coffee-hover);
   --color-border: var(--coffee-border);
-  --color-border-subtle: #4A342A;
+  --color-border-subtle: var(--coffee-border);
   --color-input-border: var(--coffee-input-border);
 
   --color-text-main: var(--coffee-text);
   --color-text-muted: var(--coffee-muted);
-  --color-text-light: #B99C86;
+  --color-text-light: var(--coffee-muted);
   --color-secondary: var(--coffee-secondary);
   --color-on-accent: var(--coffee-on-accent);
 
-  /* Estados (adaptados al tema oscuro) */
-  --color-success: #8FBF8B;
-  --color-success-bg: rgba(143, 191, 139, 0.14);
-  --color-success-text: #B7D8B4;
+  /* Estados */
+  --color-success: #34d399;
+  --color-success-bg: rgba(52, 211, 153, 0.12);
+  --color-success-text: #34d399;
 
-  --color-danger: #E0A08F;
-  --color-danger-bg: rgba(224, 160, 143, 0.14);
-  --color-danger-text: #F0C4B8;
+  --color-danger: #f87171;
+  --color-danger-bg: rgba(248, 113, 113, 0.12);
+  --color-danger-text: #f87171;
 
-  --color-warning: #E3C08C;
-  --color-warning-bg: rgba(227, 192, 140, 0.14);
-  --color-warning-text: #F0D5AE;
+  --color-warning: #fb923c;
+  --color-warning-bg: rgba(251, 146, 60, 0.12);
+  --color-warning-text: #fb923c;
 
-  --color-info: #9DBFD0;
-  --color-info-bg: rgba(157, 191, 208, 0.14);
-  --color-info-text: #BFD8E4;
+  --color-info: #6366f1;
+  --color-info-bg: rgba(99, 102, 241, 0.14);
+  --color-info-text: #a5b4fc;
 
   --color-neutral-bg: var(--coffee-hover);
   --color-neutral-text: var(--coffee-muted);
+
+  /* Dashboard chart palette */
+  --chart-violet: #8b5cf6;
+  --chart-indigo: #6366f1;
+  --chart-magenta: #c026d3;
+  --chart-success: #34d399;
+  --chart-warning: #fb923c;
+  --chart-sky: #38bdf8;
 
   /* Radios (--radius-sm se conserva para no alterar botones) */
   --radius-sm: 4px;
@@ -69,7 +84,7 @@
   --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.28);
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.32);
   --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.45);
-  --shadow-accent: 0 0 0 1px rgba(201, 160, 127, 0.35), 0 12px 32px rgba(0, 0, 0, 0.35);
+  --shadow-accent: 0 0 0 1px var(--accent-glow), 0 12px 32px rgba(0, 0, 0, 0.35);
 
   /* Tipografía */
   --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;

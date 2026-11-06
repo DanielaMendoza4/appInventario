@@ -19,6 +19,12 @@ html, body {
 
 body {
   overflow-x: hidden;
+  min-height: 100vh;
+  background:
+    radial-gradient(60% 40% at 50% 100%, var(--ambient-violet) 0%, transparent 70%),
+    radial-gradient(50% 30% at 50% 0%, var(--ambient-blue) 0%, transparent 70%),
+    var(--color-bg);
+  background-attachment: fixed;
 }
 
 h1, h2, h3, h4, h5, h6 {
