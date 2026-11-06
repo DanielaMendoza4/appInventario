@@ -1,6 +1,6 @@
 .topbar {
   min-height: 76px;
-  background-color: rgba(31, 21, 17, 0.86);
+  background-color: var(--color-topbar-bg);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--color-border);
@@ -45,7 +45,10 @@
   font-family: var(--font-display);
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--color-text-main);
+  background: var(--title-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
   line-height: 1.2;
   margin: 0;
   letter-spacing: -0.02em;
@@ -70,6 +73,22 @@
 
 .topbar__action:empty {
   display: none;
+}
+
+.topbar__action .btn-primary {
+  background: var(--accent-gradient);
+  border-color: transparent;
+  color: var(--color-on-accent);
+  transition:
+    transform 200ms var(--ease),
+    box-shadow 200ms var(--ease),
+    filter 200ms var(--ease);
+}
+
+.topbar__action .btn-primary:hover:not(:disabled) {
+  filter: brightness(1.12);
+  box-shadow: 0 0 28px var(--accent-glow);
+  transform: translateY(-1px);
 }
 
 @media (max-width: 1023px) {

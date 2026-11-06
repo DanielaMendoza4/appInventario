@@ -27,7 +27,7 @@
 
 .search-input__field:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(201, 160, 127, 0.2);
+  box-shadow: 0 0 0 3px var(--color-focus-glow);
 }
 
 .search-input__clear {

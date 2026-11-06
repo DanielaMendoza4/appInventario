@@ -16,14 +16,12 @@ import {
 } from '../../components/Icons/Icons';
 
 const CHART_COLORS = [
-  '#C9A07F',
-  '#8A6149',
-  '#E3C4A3',
-  '#6F4A37',
-  '#D9A679',
-  '#A67C5B',
-  '#B98A63',
-  '#7C5340',
+  'var(--chart-violet)',
+  'var(--chart-indigo)',
+  'var(--chart-magenta)',
+  'var(--chart-success)',
+  'var(--chart-warning)',
+  'var(--chart-sky)',
 ];
 
 const formatFecha = (mov) =>

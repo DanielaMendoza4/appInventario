@@ -4,6 +4,7 @@ import './Login.css';
 import { useAuth } from '../../context/AuthContext';
 import { IconEye, IconEyeSlash } from '../../components/Icons/Icons';
 import FloatingField from '../../components/ui/FloatingField';
+import logoCompletoTransparente from '../../assets/logo-completo-transparente.svg';
 
 export default function Login() {
   const { user, login } = useAuth();
@@ -61,8 +62,11 @@ export default function Login() {
       <main className="login-layout">
         <section className="login-brand">
           <div className="login-brand__mark">
-            <div className="login-brand__logo" aria-hidden="true">S</div>
-            <span className="login-brand__name">SENATI Inventario</span>
+            <img
+              className="login-brand__logo"
+              src={logoCompletoTransparente}
+              alt="Logotipo del sistema de inventario"
+            />
           </div>
 
           <h1 className="login-brand__title">
@@ -134,7 +138,7 @@ export default function Login() {
           </form>
 
           <p className="login-card__footer">
-            Laboratorio #9 — SENATI © 2026
+            Sistema de inventario © 2026
           </p>
         </section>
       </main>

@@ -13,21 +13,21 @@
 .badge--activo {
   background-color: var(--color-success-bg);
   color: var(--color-success-text);
-  border: 1px solid rgba(143, 191, 139, 0.4);
+  border: 1px solid var(--color-success-border);
 }
 
 .badge--salida,
 .badge--danger {
   background-color: var(--color-danger-bg);
   color: var(--color-danger-text);
-  border: 1px solid rgba(224, 160, 143, 0.4);
+  border: 1px solid var(--color-danger-border);
 }
 
 .badge--ajuste,
 .badge--warning {
   background-color: var(--color-warning-bg);
   color: var(--color-warning-text);
-  border: 1px solid rgba(227, 192, 140, 0.4);
+  border: 1px solid var(--color-warning-border);
 }
 
 .badge--inactivo,
@@ -41,16 +41,16 @@
   background-color: var(--color-danger-bg);
   color: var(--color-danger-text);
   font-weight: 700;
-  border: 1px solid rgba(224, 160, 143, 0.55);
+  border: 1px solid var(--color-danger-border-strong);
   animation: pulse-border 2s infinite;
 }
 
 @keyframes pulse-border {
   0%,
   100% {
-    border-color: rgba(224, 160, 143, 0.55);
+    border-color: var(--color-danger-border-strong);
   }
   50% {
-    border-color: rgba(224, 160, 143, 0.95);
+    border-color: var(--color-danger-border-pulse);
   }
 }

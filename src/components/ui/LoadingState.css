@@ -13,7 +13,7 @@
   height: 22px;
   flex-shrink: 0;
   border-radius: var(--radius-full);
-  border: 2px solid rgba(201, 160, 127, 0.25);
+  border: 2px solid var(--color-accent-track);
   border-top-color: var(--color-primary);
   animation: uiSpin 0.8s linear infinite;
 }

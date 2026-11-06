@@ -34,7 +34,7 @@ export default function Topbar({ onToggleMenu }) {
   const { pathname } = useLocation();
   const meta = PAGE_META[pathname] || {
     titulo: 'Sistema de Inventario',
-    subtitulo: 'SENATI',
+    subtitulo: 'Control de inventario',
   };
 
   return (

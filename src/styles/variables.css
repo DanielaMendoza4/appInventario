@@ -16,6 +16,12 @@
 
   --accent-glow: rgba(139, 92, 246, 0.45);
   --accent-gradient: linear-gradient(135deg, var(--coffee-accent), var(--coffee-secondary));
+  --sidebar-active-gradient: linear-gradient(135deg, rgba(139, 92, 246, 0.35), rgba(192, 38, 211, 0.22));
+  --sidebar-active-inset: inset 0 0 0 1px var(--color-accent-border-strong);
+  --avatar-gradient: linear-gradient(135deg, var(--chart-indigo), var(--coffee-secondary));
+  --title-gradient: linear-gradient(180deg, #ffffff 0%, #b9b3d6 100%);
+  --danger-glow: rgba(248, 113, 113, 0.25);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --ambient-violet: rgba(168, 85, 247, 0.35);
   --ambient-blue: rgba(99, 102, 241, 0.18);
 
@@ -23,6 +29,25 @@
   --color-primary: var(--coffee-accent);
   --color-primary-hover: #a78bfa;
   --color-primary-light: rgba(139, 92, 246, 0.14);
+  --color-surface-soft: rgba(255, 255, 255, 0.03);
+  --color-surface-active: rgba(139, 92, 246, 0.14);
+  --color-border-strong: rgba(255, 255, 255, 0.16);
+  --color-focus-glow: rgba(139, 92, 246, 0.25);
+  --color-selection: rgba(139, 92, 246, 0.35);
+  --color-overlay: rgba(7, 4, 26, 0.72);
+  --color-overlay-soft: rgba(7, 4, 26, 0.28);
+  --color-table-head: rgba(7, 4, 26, 0.5);
+  --color-table-hover: rgba(255, 255, 255, 0.05);
+  --color-panel-header: rgba(7, 4, 26, 0.28);
+  --color-topbar-bg: rgba(13, 8, 40, 0.86);
+  --color-accent-border: rgba(139, 92, 246, 0.3);
+  --color-accent-border-strong: rgba(167, 139, 250, 0.4);
+  --color-accent-track: rgba(139, 92, 246, 0.25);
+  --color-accent-ring: rgba(139, 92, 246, 0.12);
+  --color-accent-ring-strong: rgba(139, 92, 246, 0.22);
+  --color-accent-ring-soft: rgba(139, 92, 246, 0.1);
+  --color-accent-text: #c4b5fd;
+  --color-text-faint: #6b6489;
 
   --color-sidebar-bg: var(--coffee-sidebar);
   --color-sidebar-header: var(--coffee-bg);
@@ -48,14 +73,20 @@
   --color-success: #34d399;
   --color-success-bg: rgba(52, 211, 153, 0.12);
   --color-success-text: #34d399;
+  --color-success-border: rgba(52, 211, 153, 0.4);
+  --color-success-glow: rgba(52, 211, 153, 0.5);
 
   --color-danger: #f87171;
   --color-danger-bg: rgba(248, 113, 113, 0.12);
   --color-danger-text: #f87171;
+  --color-danger-border: rgba(248, 113, 113, 0.4);
+  --color-danger-border-strong: rgba(248, 113, 113, 0.55);
+  --color-danger-border-pulse: rgba(248, 113, 113, 0.95);
 
   --color-warning: #fb923c;
   --color-warning-bg: rgba(251, 146, 60, 0.12);
   --color-warning-text: #fb923c;
+  --color-warning-border: rgba(251, 146, 60, 0.4);
 
   --color-info: #6366f1;
   --color-info-bg: rgba(99, 102, 241, 0.14);
@@ -63,6 +94,8 @@
 
   --color-neutral-bg: var(--coffee-hover);
   --color-neutral-text: var(--coffee-muted);
+  --color-avatar-border: rgba(255, 255, 255, 0.18);
+  --color-progress-track: rgba(255, 255, 255, 0.08);
 
   /* Dashboard chart palette */
   --chart-violet: #8b5cf6;

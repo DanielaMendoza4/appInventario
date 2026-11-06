@@ -82,7 +82,7 @@ input:focus,
 select:focus,
 textarea:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(201, 160, 127, 0.2);
+  box-shadow: 0 0 0 3px var(--color-focus-glow);
 }
 
 select option {
@@ -98,7 +98,7 @@ select option {
 }
 
 ::selection {
-  background-color: rgba(201, 160, 127, 0.35);
+  background-color: var(--color-selection);
   color: var(--color-text-main);
 }
 
@@ -158,14 +158,14 @@ select option {
 
 /* Editar: fondo translúcido del color atenuado */
 .btn-warning {
-  background-color: rgba(210, 184, 163, 0.14);
-  color: #EBDACC;
-  border: 1px solid rgba(210, 184, 163, 0.24);
+  background-color: var(--color-primary-light);
+  color: var(--color-text-main);
+  border: 1px solid var(--color-border-strong);
 }
 
 .btn-warning:hover:not(:disabled) {
-  background-color: rgba(210, 184, 163, 0.24);
-  border-color: rgba(210, 184, 163, 0.4);
+  background-color: var(--color-surface-active);
+  border-color: var(--color-accent-border);
 }
 
 /* Eliminar / desactivar: solo borde claro */
@@ -173,12 +173,12 @@ select option {
 .btn-outline-danger {
   background-color: transparent;
   color: var(--color-text-muted);
-  border: 1px solid rgba(210, 184, 163, 0.45);
+  border: 1px solid var(--color-border-strong);
 }
 
 .btn-danger:hover:not(:disabled),
 .btn-outline-danger:hover:not(:disabled) {
-  background-color: rgba(224, 160, 143, 0.12);
+  background-color: var(--color-danger-bg);
   border-color: var(--color-danger);
   color: var(--color-danger-text);
 }
@@ -204,7 +204,7 @@ select option {
 }
 
 .data-table th {
-  background-color: rgba(31, 21, 17, 0.5);
+  background-color: var(--color-table-head);
   color: var(--color-text-muted);
   font-weight: 600;
   padding: 0.75rem 1rem;
@@ -226,7 +226,7 @@ select option {
 }
 
 .data-table tbody tr:hover {
-  background-color: rgba(77, 54, 41, 0.45);
+  background-color: var(--color-table-hover);
 }
 
 .table-actions {
@@ -273,7 +273,7 @@ select option {
   flex-wrap: wrap;
   padding: 1.15rem 1.25rem;
   border-bottom: 1px solid var(--color-border);
-  background-color: rgba(31, 21, 17, 0.28);
+  background-color: var(--color-panel-header);
 }
 
 .page-panel__title {
@@ -383,13 +383,13 @@ select option {
 .alert-danger {
   background-color: var(--color-danger-bg);
   color: var(--color-danger-text);
-  border: 1px solid rgba(224, 160, 143, 0.4);
+  border: 1px solid var(--color-danger-border);
 }
 
 .alert-success {
   background-color: var(--color-success-bg);
   color: var(--color-success-text);
-  border: 1px solid rgba(143, 191, 139, 0.4);
+  border: 1px solid var(--color-success-border);
 }
 
 /* Encabezados de vista */
@@ -464,8 +464,8 @@ select option {
 }
 
 @keyframes pulseDot {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(143, 191, 139, 0.5); }
-  50% { opacity: 0.7; box-shadow: 0 0 0 5px rgba(143, 191, 139, 0); }
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 var(--color-success-glow); }
+  50% { opacity: 0.7; box-shadow: 0 0 0 5px transparent; }
 }
 
 /* Respeta reducción de movimiento */

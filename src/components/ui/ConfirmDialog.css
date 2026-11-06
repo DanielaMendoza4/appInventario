@@ -6,7 +6,7 @@
   align-items: center;
   justify-content: center;
   padding: 1.25rem;
-  background-color: rgba(15, 10, 8, 0.72);
+  background-color: var(--color-overlay);
   backdrop-filter: blur(4px);
   animation: confirmFadeIn 0.15s ease-out;
 }
@@ -34,15 +34,15 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-full);
-  background-color: rgba(201, 160, 127, 0.14);
-  border: 1px solid rgba(201, 160, 127, 0.3);
+  background-color: var(--color-primary-light);
+  border: 1px solid var(--color-accent-border);
   color: var(--color-primary);
   margin-bottom: 0.9rem;
 }
 
 .confirm-dialog__icon--danger {
   background-color: var(--color-danger-bg);
-  border-color: rgba(224, 160, 143, 0.4);
+  border-color: var(--color-danger-border);
   color: var(--color-danger-text);
 }
 
@@ -77,12 +77,12 @@
 
 .confirm-dialog__confirm--danger {
   background-color: var(--color-danger);
-  color: #2A1510;
+  color: var(--color-on-accent);
   font-weight: 600;
 }
 
 .confirm-dialog__confirm--danger:hover:not(:disabled) {
-  background-color: #ECAFA0;
+  background-color: var(--color-danger);
 }
 
 @keyframes confirmFadeIn {

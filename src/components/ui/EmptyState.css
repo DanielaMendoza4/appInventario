@@ -15,8 +15,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(201, 160, 127, 0.12);
-  border: 1px solid rgba(201, 160, 127, 0.2);
+  background-color: var(--color-primary-light);
+  border: 1px solid var(--color-accent-border);
   color: var(--color-primary);
   margin-bottom: 0.5rem;
   animation: floatY 3.6s ease-in-out infinite;

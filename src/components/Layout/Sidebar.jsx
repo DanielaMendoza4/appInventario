@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import './Sidebar.css';
 import { useAuth } from '../../context/AuthContext';
+import logoCompletoTransparente from '../../assets/logo-completo-transparente.svg';
 import {
   IconDashboard,
   IconProductos,
@@ -39,11 +40,11 @@ export default function Sidebar({ isOpen, onClose }) {
 
       <aside className={`sidebar ${isOpen ? 'sidebar--open' : ''}`}>
         <div className="sidebar__brand">
-          <div className="sidebar__logo-badge" aria-hidden="true">S</div>
-          <div className="sidebar__brand-text">
-            <h2>SENATI Inventario</h2>
-            <p>Sistema de Inventario</p>
-          </div>
+          <img
+            className="sidebar__logo-badge"
+            src={logoCompletoTransparente}
+            alt="Logotipo del sistema de inventario"
+          />
         </div>
 
         <nav className="sidebar__nav" aria-label="Navegación principal">
@@ -86,7 +87,7 @@ export default function Sidebar({ isOpen, onClose }) {
         </div>
 
         <div className="sidebar__footer">
-          Laboratorio #9 — SENATI
+          Sistema de inventario
         </div>
       </aside>
     </>

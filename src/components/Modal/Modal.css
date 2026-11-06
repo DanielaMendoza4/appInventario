@@ -1,7 +1,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(15, 10, 8, 0.72);
+  background-color: var(--color-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -32,7 +32,7 @@
   gap: 1rem;
   padding: 1.15rem 1.5rem;
   border-bottom: 1px solid var(--color-border);
-  background-color: rgba(31, 21, 17, 0.28);
+  background-color: var(--color-panel-header);
 }
 
 .modal-title {
@@ -73,7 +73,7 @@
   gap: 0.75rem;
   padding: 1rem 1.5rem;
   border-top: 1px solid var(--color-border);
-  background-color: rgba(31, 21, 17, 0.28);
+  background-color: var(--color-panel-header);
 }
 
 @keyframes fadeIn {

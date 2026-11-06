@@ -1,6 +1,8 @@
 .sidebar {
   width: 280px;
   background-color: var(--color-sidebar-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   color: var(--color-sidebar-text);
   display: flex;
   flex-direction: column;
@@ -11,7 +13,7 @@
   left: 0;
   z-index: 1050;
   border-right: 1px solid var(--color-border);
-  transition: transform 0.25s ease-in-out;
+  transition: transform 200ms var(--ease);
 }
 
 /* Marca */
@@ -20,42 +22,15 @@
   display: flex;
   align-items: center;
   gap: 0.875rem;
-  border-bottom: 1px solid rgba(201, 160, 127, 0.12);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .sidebar__logo-badge {
-  width: 42px;
-  height: 42px;
+  width: min(200px, 100%);
+  height: auto;
   flex-shrink: 0;
-  background: var(--color-primary);
-  color: var(--color-on-accent);
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 1.375rem;
-  line-height: 1;
-  box-shadow: 0 6px 16px rgba(201, 160, 127, 0.25);
-}
-
-.sidebar__brand-text h2 {
-  font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--color-text-main);
-  letter-spacing: -0.01em;
-  margin: 0;
-  line-height: 1.2;
-}
-
-.sidebar__brand-text p {
-  font-size: 0.6875rem;
-  color: var(--color-text-light);
-  margin: 0.15rem 0 0;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  filter: drop-shadow(0 0 8px var(--accent-glow));
+  display: block;
 }
 
 /* Navegación */
@@ -77,7 +52,11 @@
   border-radius: var(--radius-md);
   font-size: 0.875rem;
   font-weight: 500;
-  transition: var(--transition);
+  transition:
+    color 200ms var(--ease),
+    background 200ms var(--ease),
+    transform 200ms var(--ease),
+    box-shadow 200ms var(--ease);
 }
 
 .sidebar__link svg {
@@ -88,7 +67,7 @@
 .sidebar__link:hover {
   background-color: var(--color-sidebar-hover);
   color: var(--color-text-main);
-  transform: translateX(4px);
+  transform: translateX(3px);
 }
 
 .sidebar__link:hover svg {
@@ -97,11 +76,11 @@
 
 .sidebar__link--active,
 .sidebar__link--active:hover {
-  background-color: var(--color-sidebar-active);
-  color: var(--color-sidebar-active-text);
+  background: var(--sidebar-active-gradient);
+  color: var(--color-on-accent);
   transform: none;
   font-weight: 600;
-  box-shadow: 0 6px 18px rgba(201, 160, 127, 0.22);
+  box-shadow: var(--sidebar-active-inset), 0 0 24px -6px var(--accent-glow);
 }
 
 .sidebar__link--active svg {
@@ -111,7 +90,7 @@
 /* Bloque de usuario */
 .sidebar__user {
   padding: 1rem 1.25rem 1.125rem;
-  border-top: 1px solid rgba(201, 160, 127, 0.12);
+  border-top: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   gap: 0.875rem;
@@ -129,14 +108,14 @@
   height: 40px;
   flex-shrink: 0;
   border-radius: var(--radius-full);
-  background-color: var(--color-secondary);
-  color: var(--color-text-main);
+  background: var(--avatar-gradient);
+  color: var(--color-on-accent);
   font-weight: 700;
   font-size: 0.9375rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(245, 233, 223, 0.18);
+  border: 1px solid var(--color-avatar-border);
 }
 
 .sidebar__user-details {
@@ -176,18 +155,23 @@
   background: transparent;
   border: 1px solid var(--color-input-border);
   border-radius: var(--radius-md);
-  transition: var(--transition);
+  transition:
+    background-color 200ms var(--ease),
+    border-color 200ms var(--ease),
+    box-shadow 200ms var(--ease),
+    color 200ms var(--ease);
 }
 
 .sidebar__logout-btn:hover {
   background-color: var(--color-hover);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  border-color: var(--color-danger);
+  color: var(--color-danger-text);
+  box-shadow: 0 0 18px var(--danger-glow);
 }
 
 .sidebar__footer {
   padding: 0.875rem 1.25rem 1.125rem;
-  border-top: 1px solid rgba(201, 160, 127, 0.12);
+  border-top: 1px solid var(--color-border);
   font-size: 0.6875rem;
   color: var(--color-text-light);
   text-align: center;
@@ -202,13 +186,13 @@
 
   .sidebar--open {
     transform: translateX(0);
-    box-shadow: 8px 0 32px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--shadow-lg);
   }
 
   .sidebar-backdrop {
     position: fixed;
     inset: 0;
-    background-color: rgba(15, 10, 8, 0.65);
+    background-color: var(--color-overlay);
     z-index: 1040;
     backdrop-filter: blur(3px);
   }

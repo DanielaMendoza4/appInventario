@@ -8,8 +8,8 @@
   overflow: hidden;
   background-color: var(--color-bg);
   background-image:
-    radial-gradient(circle at 18% 42%, rgba(201, 160, 127, 0.1), transparent 45%),
-    radial-gradient(circle at 85% 85%, rgba(138, 97, 73, 0.16), transparent 50%);
+    radial-gradient(circle at 18% 42%, var(--ambient-blue), transparent 45%),
+    radial-gradient(circle at 85% 85%, var(--ambient-violet), transparent 50%);
   padding: 2.5rem 1.5rem;
 }
 
@@ -26,14 +26,14 @@
   inset: 0;
   margin: auto;
   border-radius: var(--radius-full);
-  border: 1px solid rgba(201, 160, 127, 0.16);
+  border: 1px solid var(--color-accent-ring);
   animation: pulseRing 9s ease-in-out infinite;
 }
 
 .login-ring--1 {
   width: min(340px, 70vw);
   height: min(340px, 70vw);
-  border-color: rgba(201, 160, 127, 0.22);
+  border-color: var(--color-accent-ring-strong);
 }
 
 .login-ring--2 {
@@ -45,7 +45,7 @@
 .login-ring--3 {
   width: min(760px, 145vw);
   height: min(760px, 145vw);
-  border-color: rgba(201, 160, 127, 0.1);
+  border-color: var(--color-accent-ring-soft);
   animation-delay: 2.4s;
 }
 
@@ -68,7 +68,7 @@
   margin-left: -6px;
   border-radius: var(--radius-full);
   background-color: var(--color-primary);
-  box-shadow: 0 0 18px 4px rgba(201, 160, 127, 0.45);
+  box-shadow: 0 0 18px 4px var(--accent-glow);
 }
 
 @keyframes loginOrbit {
@@ -103,28 +103,10 @@
 }
 
 .login-brand__logo {
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--color-primary);
-  color: var(--color-on-accent);
-  border-radius: var(--radius-md);
-  font-family: var(--font-display);
-  font-size: 1.625rem;
-  font-weight: 700;
-  line-height: 1;
-  box-shadow: 0 10px 26px rgba(201, 160, 127, 0.3);
-}
-
-.login-brand__name {
-  font-family: var(--font-display);
-  font-size: 1.0625rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--color-text-main);
+  display: block;
+  width: min(280px, 100%);
+  height: auto;
+  filter: drop-shadow(0 0 8px var(--accent-glow));
 }
 
 .login-brand__title {

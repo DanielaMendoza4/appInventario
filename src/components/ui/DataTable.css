@@ -12,7 +12,7 @@
 }
 
 .ui-table th {
-  background-color: rgba(31, 21, 17, 0.5);
+  background-color: var(--color-table-head);
   color: var(--color-text-muted);
   font-weight: 600;
   padding: 0.8rem 1rem;
@@ -35,7 +35,7 @@
 }
 
 .ui-table tbody tr:hover {
-  background-color: rgba(77, 54, 41, 0.45);
+  background-color: var(--color-table-hover);
 }
 
 .ui-table tbody tr:last-child td {
