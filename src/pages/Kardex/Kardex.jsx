@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import './Kardex.css';
 import { getMovimientos, createMovimiento, anularMovimiento } from '../../api/movimientos';
 import { getProductos } from '../../api/productos';
+import { useAuth } from '../../context/AuthContext';
 import Modal from '../../components/Modal/Modal';
 import { TopbarAction } from '../../components/Layout/TopbarAction';
 import Badge from '../../components/Badge/Badge';
@@ -39,6 +40,10 @@ const formatFechaTabla = (mov) =>
   });
 
 export default function Kardex() {
+  const { user } = useAuth();
+  const esAdmin = user?.rol === 'Administrador';
+  const puedeRegistrar = ['Administrador', 'Almacenero'].includes(user?.rol);
+
   const [movimientos, setMovimientos] = useState([]);
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -155,7 +160,9 @@ export default function Kardex() {
       await cargarDatos();
     } catch (err) {
       setFormError(
-        err.response?.data?.error || 'Error al registrar el movimiento'
+        err.response?.data?.error ||
+          err.response?.data?.message ||
+          'Error al registrar el movimiento'
       );
     } finally {
       setGuardando(false);
@@ -176,7 +183,11 @@ export default function Kardex() {
       toast.success('Movimiento anulado');
       await cargarDatos();
     } catch (err) {
-      toast.error(err.response?.data?.error || 'No se pudo anular el movimiento');
+      toast.error(
+        err.response?.data?.error ||
+          err.response?.data?.message ||
+          'No se pudo anular el movimiento'
+      );
     }
   };
 
@@ -272,14 +283,16 @@ export default function Kardex() {
             <IconEye size={14} />
             <span>Ver</span>
           </button>
-          <button
-            type="button"
-            className="btn btn-outline-danger btn-sm"
-            onClick={() => handleAnular(m)}
-            title="Anular movimiento y revertir stock"
-          >
-            <span>Anular</span>
-          </button>
+          {esAdmin && (
+            <button
+              type="button"
+              className="btn btn-outline-danger btn-sm"
+              onClick={() => handleAnular(m)}
+              title="Anular movimiento y revertir stock"
+            >
+              <span>Anular</span>
+            </button>
+          )}
         </div>
       ),
     },
@@ -287,12 +300,14 @@ export default function Kardex() {
 
   return (
     <div className="kardex-page">
-      <TopbarAction>
-        <button className="btn btn-primary" onClick={abrirRegistro}>
-          <IconPlus size={16} />
-          <span>Registrar movimiento</span>
-        </button>
-      </TopbarAction>
+      {puedeRegistrar && (
+        <TopbarAction>
+          <button className="btn btn-primary" onClick={abrirRegistro}>
+            <IconPlus size={16} />
+            <span>Registrar movimiento</span>
+          </button>
+        </TopbarAction>
+      )}
 
       <Card as="section" className="page-panel" aria-labelledby="kardex-title">
         <header className="page-panel__header">
@@ -366,7 +381,9 @@ export default function Kardex() {
           emptyMessage={
             hayFiltros
               ? 'Prueba con otro término de búsqueda o cambia el tipo de movimiento.'
-              : 'Registra la primera entrada o salida con el botón de la barra superior.'
+              : puedeRegistrar
+                ? 'Registra la primera entrada o salida con el botón de la barra superior.'
+                : 'Todavía no se han registrado movimientos.'
           }
           emptyIcon={<IconKardex size={30} />}
         />

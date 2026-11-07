@@ -3,6 +3,7 @@ import './Productos.css';
 import { getProductos, createProducto, updateProducto, deleteProducto } from '../../api/productos';
 import { getCategorias } from '../../api/categorias';
 import { getProveedores } from '../../api/proveedores';
+import { useAuth } from '../../context/AuthContext';
 import Modal from '../../components/Modal/Modal';
 import { TopbarAction } from '../../components/Layout/TopbarAction';
 import SearchInput from '../../components/SearchInput/SearchInput';
@@ -32,6 +33,9 @@ const fetchProductosData = () =>
   Promise.all([getProductos(), getCategorias(), getProveedores()]);
 
 export default function Productos() {
+  const { user } = useAuth();
+  const esAdmin = user?.rol === 'Administrador';
+
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [proveedores, setProveedores] = useState([]);
@@ -164,7 +168,7 @@ export default function Productos() {
       cerrarModal();
       await cargarDatos();
     } catch (err) {
-      setFormError(err.response?.data?.error || 'Error al guardar el producto');
+      setFormError(err.response?.data?.error || err.response?.data?.message || 'Error al guardar el producto');
     } finally {
       setGuardando(false);
     }
@@ -184,7 +188,7 @@ export default function Productos() {
       toast.success('Producto eliminado');
       await cargarDatos();
     } catch (err) {
-      toast.error(err.response?.data?.error || 'No se pudo eliminar el producto');
+      toast.error(err.response?.data?.error || err.response?.data?.message || 'No se pudo eliminar el producto');
     }
   };
 
@@ -289,14 +293,21 @@ export default function Productos() {
     },
   ];
 
+  // Solo el Administrador ve la columna de acciones
+  const columnasVisibles = esAdmin
+    ? columnas
+    : columnas.filter((c) => c.key !== 'acciones');
+
   return (
     <div className="productos-page">
-      <TopbarAction>
-        <button className="btn btn-primary" onClick={abrirModalNuevo}>
-          <IconPlus size={16} />
-          <span>Nuevo producto</span>
-        </button>
-      </TopbarAction>
+      {esAdmin && (
+        <TopbarAction>
+          <button className="btn btn-primary" onClick={abrirModalNuevo}>
+            <IconPlus size={16} />
+            <span>Nuevo producto</span>
+          </button>
+        </TopbarAction>
+      )}
 
       <Card as="section" className="page-panel" aria-labelledby="productos-title">
         <header className="page-panel__header">
@@ -359,7 +370,7 @@ export default function Productos() {
         </div>
 
         <DataTable
-          columns={columnas}
+          columns={columnasVisibles}
           rows={productosPaginados}
           rowKey={(p) => p.id}
           loading={loading}
@@ -372,7 +383,9 @@ export default function Productos() {
           emptyMessage={
             hayFiltros
               ? 'Prueba con otro término de búsqueda o selecciona otra categoría.'
-              : 'Crea tu primer producto con el botón de la barra superior.'
+              : esAdmin
+                ? 'Crea tu primer producto con el botón de la barra superior.'
+                : 'Todavía no se han registrado productos.'
           }
           emptyIcon={<IconProductos size={30} />}
         />
