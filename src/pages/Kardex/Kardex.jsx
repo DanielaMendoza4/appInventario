@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import './Kardex.css';
 import { getMovimientos, createMovimiento, anularMovimiento } from '../../api/movimientos';
 import { getProductos } from '../../api/productos';
-import { useAuth } from '../../context/AuthContext';
 import Modal from '../../components/Modal/Modal';
 import { TopbarAction } from '../../components/Layout/TopbarAction';
 import Badge from '../../components/Badge/Badge';
@@ -40,7 +39,6 @@ const formatFechaTabla = (mov) =>
   });
 
 export default function Kardex() {
-  const { user } = useAuth();
   const [movimientos, setMovimientos] = useState([]);
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -143,9 +141,9 @@ export default function Kardex() {
     setFormError('');
 
     try {
+      // El usuario responsable lo asigna el servidor a partir de la sesión
       await createMovimiento({
         producto_id: parseInt(form.producto_id, 10),
-        usuario_id: user?.id || 1,
         tipo_movimiento: form.tipo_movimiento,
         cantidad: cant,
         observaciones: form.observaciones?.trim() || null,

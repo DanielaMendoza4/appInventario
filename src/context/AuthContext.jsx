@@ -28,9 +28,13 @@ export function AuthProvider({ children }) {
         setUser(userData);
         tokenStore.setUser(userData);
       })
-      .catch(() => {
-        tokenStore.clearToken();
-        setUser(null);
+      .catch((err) => {
+        // Solo se cierra la sesión si el servidor dice que el token no sirve.
+        // Si la API está dormida o sin red, se mantiene la sesión guardada.
+        if (err.response?.status === 401) {
+          tokenStore.clearToken();
+          setUser(null);
+        }
       })
       .finally(() => {
         setLoading(false);
@@ -53,7 +57,11 @@ export function AuthProvider({ children }) {
       setUser(data.usuario);
       return data.usuario;
     } catch (err) {
-      const message = err.response?.data?.message || err.response?.data?.error || 'Error al iniciar sesión';
+      if (!err.response) {
+        throw new Error('No hay conexión con el servidor. Si es el primer intento, espera unos segundos y reintenta.');
+      }
+      const message =
+        err.response.data?.message || err.response.data?.error || 'Error al iniciar sesión';
       throw new Error(message);
     }
   };

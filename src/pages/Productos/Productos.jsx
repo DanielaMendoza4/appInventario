@@ -135,7 +135,7 @@ export default function Productos() {
       setFormError('El precio debe ser un número positivo');
       return;
     }
-    if (Number(form.stock) < 0 || form.stock === '') {
+    if (!editandoId && (Number(form.stock) < 0 || form.stock === '')) {
       setFormError('El stock debe ser un número entero mayor o igual a 0');
       return;
     }
@@ -147,10 +147,11 @@ export default function Productos() {
       nombre: form.nombre.trim(),
       descripcion: form.descripcion?.trim() || null,
       precio: parseFloat(form.precio),
-      stock: parseInt(form.stock, 10),
       categoria_id: parseInt(form.categoria_id, 10),
       proveedor_id: form.proveedor_id ? parseInt(form.proveedor_id, 10) : null,
     };
+    // El stock solo se fija al crear; después cambia por movimientos de Kardex
+    if (!editandoId) payload.stock = parseInt(form.stock, 10);
 
     try {
       if (editandoId) {
@@ -439,17 +440,25 @@ export default function Productos() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="stock">Stock inicial *</label>
+              <label htmlFor="stock">
+                {editandoId ? 'Stock actual' : 'Stock inicial *'}
+              </label>
               <input
                 id="stock"
                 name="stock"
                 type="number"
                 min="0"
-                required
+                required={!editandoId}
+                disabled={Boolean(editandoId)}
                 placeholder="0"
                 value={form.stock}
                 onChange={handleChange}
               />
+              {editandoId && (
+                <small>
+                  Para cambiar el stock, registra una Entrada, Salida o Ajuste en Kardex.
+                </small>
+              )}
             </div>
           </div>
 
