@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import './Usuarios.css';
 import { getUsuarios, createUsuario, updateUsuario } from '../../api/usuarios';
+import { useAuth } from '../../context/AuthContext';
 import Modal from '../../components/Modal/Modal';
 import { TopbarAction } from '../../components/Layout/TopbarAction';
 import Badge from '../../components/Badge/Badge';
@@ -27,9 +28,15 @@ const formVacio = {
 
 const estadoDe = (u) => u.estado || 'Activo';
 
+const mensajeError = (err, porDefecto) =>
+  err.response?.data?.error || err.response?.data?.message || porDefecto;
+
 export default function Usuarios() {
+  const { user } = useAuth();
+  const esAdmin = user?.rol === 'Administrador';
+
   const [usuarios, setUsuarios] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(esAdmin);
   const [error, setError] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editandoId, setEditandoId] = useState(null);
@@ -42,6 +49,12 @@ export default function Usuarios() {
   const itemsPorPagina = 5;
 
   useEffect(() => {
+    // Solo el Administrador consulta la lista de usuarios
+    if (!esAdmin) {
+      setLoading(false);
+      return undefined;
+    }
+
     let cancelado = false;
 
     getUsuarios()
@@ -52,7 +65,7 @@ export default function Usuarios() {
       })
       .catch((err) => {
         if (!cancelado) {
-          setError(err.response?.data?.error || 'Error al cargar usuarios');
+          setError(mensajeError(err, 'Error al cargar usuarios'));
         }
       })
       .finally(() => {
@@ -62,7 +75,7 @@ export default function Usuarios() {
     return () => {
       cancelado = true;
     };
-  }, []);
+  }, [esAdmin]);
 
   const cargarUsuarios = async () => {
     try {
@@ -71,7 +84,7 @@ export default function Usuarios() {
       setUsuarios(data);
       setError('');
     } catch (err) {
-      setError(err.response?.data?.error || 'Error al cargar usuarios');
+      setError(mensajeError(err, 'Error al cargar usuarios'));
     } finally {
       setLoading(false);
     }
@@ -130,7 +143,7 @@ export default function Usuarios() {
 
     const payload = {
       nombre: form.nombre.trim(),
-      email: form.email.trim(),
+      email: form.email.trim().toLowerCase(),
       rol: form.rol,
       estado: form.estado,
     };
@@ -150,7 +163,7 @@ export default function Usuarios() {
       cerrarModal();
       await cargarUsuarios();
     } catch (err) {
-      setFormError(err.response?.data?.error || 'Error al guardar el usuario');
+      setFormError(mensajeError(err, 'Error al guardar el usuario'));
     } finally {
       setGuardando(false);
     }
@@ -175,9 +188,7 @@ export default function Usuarios() {
       );
       await cargarUsuarios();
     } catch (err) {
-      toast.error(
-        err.response?.data?.error || 'No se pudo actualizar el estado'
-      );
+      toast.error(mensajeError(err, 'No se pudo actualizar el estado'));
     }
   };
 
@@ -264,6 +275,24 @@ export default function Usuarios() {
       ),
     },
   ];
+
+  // Quien no es Administrador no gestiona usuarios
+  if (!esAdmin) {
+    return (
+      <div className="usuarios-page">
+        <Card as="section" className="page-panel">
+          <header className="page-panel__header">
+            <div>
+              <h2 className="page-panel__title">Acceso restringido</h2>
+              <p className="page-panel__subtitle">
+                Solo un Administrador puede ver y gestionar los usuarios del sistema.
+              </p>
+            </div>
+          </header>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="usuarios-page">

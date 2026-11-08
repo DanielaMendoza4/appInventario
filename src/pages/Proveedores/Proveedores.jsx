@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import './Proveedores.css';
 import { getProveedores, createProveedor, updateProveedor, deleteProveedor } from '../../api/proveedores';
+import { useAuth } from '../../context/AuthContext';
 import Modal from '../../components/Modal/Modal';
 import { TopbarAction } from '../../components/Layout/TopbarAction';
 import SearchInput from '../../components/SearchInput/SearchInput';
@@ -23,7 +24,13 @@ const formVacio = {
   email: '',
 };
 
+const mensajeError = (err, porDefecto) =>
+  err.response?.data?.error || err.response?.data?.message || porDefecto;
+
 export default function Proveedores() {
+  const { user } = useAuth();
+  const esAdmin = user?.rol === 'Administrador';
+
   const [proveedores, setProveedores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -47,7 +54,7 @@ export default function Proveedores() {
       })
       .catch((err) => {
         if (!cancelado) {
-          setError(err.response?.data?.error || 'Error al cargar proveedores');
+          setError(mensajeError(err, 'Error al cargar proveedores'));
         }
       })
       .finally(() => {
@@ -66,7 +73,7 @@ export default function Proveedores() {
       setProveedores(data);
       setError('');
     } catch (err) {
-      setError(err.response?.data?.error || 'Error al cargar proveedores');
+      setError(mensajeError(err, 'Error al cargar proveedores'));
     } finally {
       setLoading(false);
     }
@@ -132,7 +139,7 @@ export default function Proveedores() {
       cerrarModal();
       await cargarProveedores();
     } catch (err) {
-      setFormError(err.response?.data?.error || 'Error al guardar el proveedor');
+      setFormError(mensajeError(err, 'Error al guardar el proveedor'));
     } finally {
       setGuardando(false);
     }
@@ -153,8 +160,10 @@ export default function Proveedores() {
       await cargarProveedores();
     } catch (err) {
       toast.error(
-        err.response?.data?.error ||
+        mensajeError(
+          err,
           'No se puede eliminar el proveedor si tiene productos asociados'
+        )
       );
     }
   };
@@ -235,14 +244,21 @@ export default function Proveedores() {
     },
   ];
 
+  // Solo el Administrador ve la columna de acciones
+  const columnasVisibles = esAdmin
+    ? columnas
+    : columnas.filter((c) => c.key !== 'acciones');
+
   return (
     <div className="proveedores-page">
-      <TopbarAction>
-        <button className="btn btn-primary" onClick={abrirModalNuevo}>
-          <IconPlus size={16} />
-          <span>Nuevo proveedor</span>
-        </button>
-      </TopbarAction>
+      {esAdmin && (
+        <TopbarAction>
+          <button className="btn btn-primary" onClick={abrirModalNuevo}>
+            <IconPlus size={16} />
+            <span>Nuevo proveedor</span>
+          </button>
+        </TopbarAction>
+      )}
 
       <Card as="section" className="page-panel" aria-labelledby="proveedores-title">
         <header className="page-panel__header">
@@ -268,7 +284,7 @@ export default function Proveedores() {
         </div>
 
         <DataTable
-          columns={columnas}
+          columns={columnasVisibles}
           rows={paginados}
           rowKey={(p) => p.id}
           loading={loading}
@@ -283,7 +299,9 @@ export default function Proveedores() {
           emptyMessage={
             hayBusqueda
               ? 'Prueba con otro término de búsqueda.'
-              : 'Registra tu primer proveedor con el botón de la barra superior.'
+              : esAdmin
+                ? 'Registra tu primer proveedor con el botón de la barra superior.'
+                : 'Todavía no se han registrado proveedores.'
           }
           emptyIcon={<IconProveedores size={30} />}
         />

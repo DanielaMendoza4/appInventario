@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import './Categorias.css';
 import { getCategorias, createCategoria, updateCategoria, deleteCategoria } from '../../api/categorias';
+import { useAuth } from '../../context/AuthContext';
 import Modal from '../../components/Modal/Modal';
 import { TopbarAction } from '../../components/Layout/TopbarAction';
 import SearchInput from '../../components/SearchInput/SearchInput';
@@ -18,7 +19,13 @@ import {
 
 const formVacio = { nombre: '', descripcion: '' };
 
+const mensajeError = (err, porDefecto) =>
+  err.response?.data?.error || err.response?.data?.message || porDefecto;
+
 export default function Categorias() {
+  const { user } = useAuth();
+  const esAdmin = user?.rol === 'Administrador';
+
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -42,7 +49,7 @@ export default function Categorias() {
       })
       .catch((err) => {
         if (!cancelado) {
-          setError(err.response?.data?.error || 'Error al cargar categorías');
+          setError(mensajeError(err, 'Error al cargar categorías'));
         }
       })
       .finally(() => {
@@ -61,7 +68,7 @@ export default function Categorias() {
       setCategorias(data);
       setError('');
     } catch (err) {
-      setError(err.response?.data?.error || 'Error al cargar categorías');
+      setError(mensajeError(err, 'Error al cargar categorías'));
     } finally {
       setLoading(false);
     }
@@ -123,7 +130,7 @@ export default function Categorias() {
       cerrarModal();
       await cargarCategorias();
     } catch (err) {
-      setFormError(err.response?.data?.error || 'Error al guardar la categoría');
+      setFormError(mensajeError(err, 'Error al guardar la categoría'));
     } finally {
       setGuardando(false);
     }
@@ -144,8 +151,10 @@ export default function Categorias() {
       await cargarCategorias();
     } catch (err) {
       toast.error(
-        err.response?.data?.error ||
+        mensajeError(
+          err,
           'No se puede eliminar la categoría si tiene productos asignados'
+        )
       );
     }
   };
@@ -224,14 +233,21 @@ export default function Categorias() {
     },
   ];
 
+  // Solo el Administrador ve la columna de acciones
+  const columnasVisibles = esAdmin
+    ? columnas
+    : columnas.filter((c) => c.key !== 'acciones');
+
   return (
     <div className="categorias-page">
-      <TopbarAction>
-        <button className="btn btn-primary" onClick={abrirModalNuevo}>
-          <IconPlus size={16} />
-          <span>Nueva categoría</span>
-        </button>
-      </TopbarAction>
+      {esAdmin && (
+        <TopbarAction>
+          <button className="btn btn-primary" onClick={abrirModalNuevo}>
+            <IconPlus size={16} />
+            <span>Nueva categoría</span>
+          </button>
+        </TopbarAction>
+      )}
 
       <Card as="section" className="page-panel" aria-labelledby="categorias-title">
         <header className="page-panel__header">
@@ -257,7 +273,7 @@ export default function Categorias() {
         </div>
 
         <DataTable
-          columns={columnas}
+          columns={columnasVisibles}
           rows={paginadas}
           rowKey={(c) => c.id}
           loading={loading}
@@ -272,7 +288,9 @@ export default function Categorias() {
           emptyMessage={
             hayBusqueda
               ? 'Prueba con otro término de búsqueda.'
-              : 'Crea tu primera categoría con el botón de la barra superior.'
+              : esAdmin
+                ? 'Crea tu primera categoría con el botón de la barra superior.'
+                : 'Todavía no se han registrado categorías.'
           }
           emptyIcon={<IconCategorias size={30} />}
         />

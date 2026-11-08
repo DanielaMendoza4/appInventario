@@ -12,13 +12,19 @@ import {
   IconLogout,
 } from '../Icons/Icons';
 
+// roles: si se indica, solo esos roles ven la opción del menú
 const menuItems = [
   { ruta: '/dashboard', etiqueta: 'Dashboard', icono: IconDashboard },
   { ruta: '/productos', etiqueta: 'Productos', icono: IconProductos },
   { ruta: '/categorias', etiqueta: 'Categorías', icono: IconCategorias },
   { ruta: '/proveedores', etiqueta: 'Proveedores', icono: IconProveedores },
   { ruta: '/kardex', etiqueta: 'Kardex / Movimientos', icono: IconKardex },
-  { ruta: '/usuarios', etiqueta: 'Usuarios', icono: IconUsuarios },
+  {
+    ruta: '/usuarios',
+    etiqueta: 'Usuarios',
+    icono: IconUsuarios,
+    roles: ['Administrador'],
+  },
 ];
 
 export default function Sidebar({ isOpen, onClose }) {
@@ -27,6 +33,10 @@ export default function Sidebar({ isOpen, onClose }) {
   const nombre = user?.nombre || 'Usuario';
   const rol = user?.rol || 'Almacenero';
   const inicial = nombre.charAt(0).toUpperCase();
+
+  const itemsVisibles = menuItems.filter(
+    (item) => !item.roles || item.roles.includes(user?.rol)
+  );
 
   return (
     <>
@@ -48,7 +58,7 @@ export default function Sidebar({ isOpen, onClose }) {
         </div>
 
         <nav className="sidebar__nav" aria-label="Navegación principal">
-          {menuItems.map((item) => {
+          {itemsVisibles.map((item) => {
             const Icon = item.icono;
 
             return (
